@@ -54,9 +54,16 @@ body {
    ══════════════════════════════════════════════════════════ */
 
 .app-header {
-  background: var(--pantone-2955);
+  background:
+    linear-gradient(90deg,
+      var(--rojo-bandera) 25%,
+      var(--amarillo-bandera) 25%,
+      var(--amarillo-bandera) 75%,
+      var(--rojo-bandera) 75%
+    ) top left / 100% 4px no-repeat,
+    var(--pantone-2955);
   border-bottom: 4px solid var(--pantone-5405);
-  padding: 10px 24px;
+  padding: 14px 24px 10px;
   display: flex;
   align-items: center;
   gap: 16px;

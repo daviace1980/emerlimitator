@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 95">
+  <g fill="white">
+
+    <!-- CORONA -->
+    <rect x="80" y="22" width="40" height="5" rx="1.5"/>
+    <!-- pico izquierdo exterior -->
+    <polygon points="82,22 85,15 88,22"/>
+    <!-- pico izquierdo interior -->
+    <polygon points="89,22 93,8  97,22"/>
+    <!-- pico central (más alto) -->
+    <polygon points="97,22 100,2 103,22"/>
+    <!-- orbe en cima del pico central -->
+    <circle cx="100" cy="2" r="3.2"/>
+    <!-- pico derecho interior -->
+    <polygon points="103,22 107,8  111,22"/>
+    <!-- pico derecho exterior -->
+    <polygon points="112,22 115,15 118,22"/>
+
+    <!-- ALAS IZQUIERDA  (3 barras que disminuyen hacia la punta) -->
+    <rect x="4"  y="44"   width="74" height="7"   rx="3.5"/>
+    <rect x="8"  y="52.5" width="70" height="6"   rx="3"/>
+    <rect x="12" y="60"   width="66" height="5"   rx="2.5"/>
+
+    <!-- ALAS DERECHA (espejo) -->
+    <rect x="122" y="44"   width="74" height="7"   rx="3.5"/>
+    <rect x="122" y="52.5" width="70" height="6"   rx="3"/>
+    <rect x="122" y="60"   width="66" height="5"   rx="2.5"/>
+
+    <!-- CÍRCULO ROKISKI  (dibujado encima de las alas para el efecto de abrazo) -->
+    <circle cx="100" cy="57" r="22" stroke="white" stroke-width="6" fill="none"/>
+
+  </g>
+</svg>
