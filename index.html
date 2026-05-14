@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMERLIMITATOR — Ejército del Aire y del Espacio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     PANTALLA 1 — BIENVENIDA / SELECCIÓN DE MODO
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-welcome">
+  <header class="app-header">
+    <div class="logo-wrap">
+      <img src="assets/logo.png" alt="Ejército del Aire y del Espacio"
+           onerror="this.outerHTML='<div class=\'logo-placeholder\'>EJÉRCITO<br>DEL AIRE<br>Y ESPACIO</div>'">
+    </div>
+    <div class="header-text">
+      <h1>EMERLIMITATOR</h1>
+      <div class="sub">Ejército del Aire y del Espacio de España</div>
+    </div>
+  </header>
+
+  <main class="welcome-body">
+
+    <div class="welcome-emblem">
+      <img src="assets/logo.png" alt="Ejército del Aire y del Espacio"
+           onerror="this.outerHTML='<div class=\'emblem-placeholder\'>EJÉRCITO<br>DEL AIRE<br>Y DEL<br>ESPACIO</div>'">
+    </div>
+
+    <div>
+      <div class="welcome-title">EMERLIMITATOR</div>
+      <div class="welcome-sub" style="margin-top:10px;">
+        Sistema de evaluación de procedimientos de emergencia<br>y límites de sistemas aeronáuticos
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="mode-pick">
+      <h2>Seleccionar modo de examen</h2>
+      <div class="mode-cards">
+
+        <div class="mode-card" onclick="selectMode('LRE')">
+          <div class="code">LRE</div>
+          <div class="full-name">Launch &amp; Recovery Element</div>
+          <div class="desc">Examen completo</div>
+        </div>
+
+        <div class="mode-card" onclick="selectMode('MCE')">
+          <div class="code">MCE</div>
+          <div class="full-name">Mission Crew Element</div>
+          <div class="desc">Examen estándar</div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     PANTALLA 2 — EXAMEN
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-exam" class="hidden">
+  <header class="app-header">
+    <div class="logo-wrap">
+      <img src="assets/logo.png" alt="EAE"
+           onerror="this.outerHTML='<div class=\'logo-placeholder\'>EAE</div>'">
+    </div>
+    <div class="header-text">
+      <h1>EMERLIMITATOR</h1>
+      <div class="sub">Examen en curso — introduce las respuestas exactas</div>
+    </div>
+    <span class="mode-badge" id="exam-mode-badge">LRE</span>
+  </header>
+
+  <main class="exam-body">
+    <div id="exam-content"></div>
+
+    <div class="submit-area">
+      <button class="btn-primary" onclick="submitExam()">ENVIAR RESPUESTAS</button>
+      <button class="btn-secondary" onclick="restartExam()">← Volver al inicio</button>
+    </div>
+  </main>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     PANTALLA 3 — RESULTADOS
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-results" class="hidden">
+  <header class="app-header">
+    <div class="logo-wrap">
+      <img src="assets/logo.png" alt="EAE"
+           onerror="this.outerHTML='<div class=\'logo-placeholder\'>EAE</div>'">
+    </div>
+    <div class="header-text">
+      <h1>EMERLIMITATOR</h1>
+      <div class="sub">Resultados del examen</div>
+    </div>
+    <span class="mode-badge" id="result-mode">LRE</span>
+  </header>
+
+  <main class="results-body">
+
+    <div class="score-panel">
+      <div class="score-value" id="result-score">—</div>
+      <div class="result-status" id="result-status">—</div>
+      <div class="result-meta">
+        <span>Respuestas correctas: <strong id="result-detail">—</strong></span>
+        <span>Tiempo: <strong id="result-time">—</strong></span>
+      </div>
+    </div>
+
+    <h3 class="review-title">Revisión de Respuestas</h3>
+    <div id="result-review"></div>
+
+    <div class="results-actions">
+      <button class="btn-primary"    onclick="restartSameMode()">REPETIR EXAMEN</button>
+      <button class="btn-secondary"  onclick="restartExam()">← Cambiar modo</button>
+    </div>
+
+  </main>
+</div>
+
+<script src="questions.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
