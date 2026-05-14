@@ -1,37 +1,47 @@
-/* ── EMERLIMITATOR — Ejército del Aire y del Espacio de España ── */
+/* ══════════════════════════════════════════════════════════
+   EMERLIMITATOR — Identidad Visual
+   Ejército del Aire y del Espacio de España
+   Colores según Manual de Identidad Corporativa (Mayo 2023)
+   ══════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&display=swap');
 
 :root {
-  --bg:           #060C1C;
-  --bg-card:      #0C1430;
-  --bg-section:   #101838;
-  --blue:         #0E2A6E;
-  --blue-mid:     #1A3D9C;
-  --blue-light:   #2855CC;
-  --gold:         #C8A020;
-  --gold-light:   #E8C040;
-  --text:         #DDE4F2;
-  --text-dim:     #7A8EBB;
-  --input-bg:     #162040;
-  --input-border: #233570;
-  --success:      #28C06A;
-  --success-bg:   #071E10;
-  --success-border:#0F4020;
-  --error:        #E03030;
-  --error-bg:     #1E0707;
-  --error-border: #4A0F0F;
-  --radius:       3px;
+  /* ── Paleta principal (Manual §1.4) ── */
+  --pantone-2955: #003764;   /* "Gris Aviador" — color principal */
+  --pantone-5405: #4e738a;   /* complementario */
+  --pantone-5425: #7a97ab;   /* complementario */
+  --pantone-5445: #b7c7d3;   /* complementario */
+
+  /* ── Paleta ampliada / realce (usar puntualmente) ── */
+  --rojo-bandera:     #ad2e1c;
+  --amarillo-bandera: #fac200;
+  --azul-cielo:       #8dc6e8;
+
+  /* ── Variables de interfaz derivadas ── */
+  --bg:           #001c36;   /* fondo profundo */
+  --bg-card:      #003764;   /* Pantone 2955 */
+  --bg-section:   #002b50;   /* superficie intermedia */
+  --input-bg:     #001f40;
+  --input-border: #4e738a;   /* Pantone 5405 */
+  --text:         #ffffff;
+  --text-dim:     #b7c7d3;   /* Pantone 5445 */
+  --success:      #2ecc71;
+  --success-bg:   #061a0e;
+  --success-bd:   #0d3d1c;
+  --error:        #ad2e1c;   /* Rojo bandera */
+  --error-bg:     #1a0505;
+  --error-bd:     #4a1010;
+  --radius:       2px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Rajdhani', 'Arial Narrow', Arial, sans-serif;
+  font-family: 'Archivo', Arial, sans-serif;
   font-size: 16px;
   min-height: 100vh;
   line-height: 1.4;
@@ -39,32 +49,30 @@ body {
 
 .hidden { display: none !important; }
 
-/* ── HEADER ── */
+/* ══════════════════════════════════════════════════════════
+   HEADER
+   ══════════════════════════════════════════════════════════ */
 
 .app-header {
-  background: linear-gradient(180deg, #070D20 0%, #0A1228 100%);
-  border-bottom: 2px solid var(--gold);
-  padding: 12px 24px;
+  background: var(--pantone-2955);
+  border-bottom: 4px solid var(--pantone-5405);
+  padding: 10px 24px;
   display: flex;
   align-items: center;
   gap: 16px;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 16px rgba(0,0,0,.6);
+  box-shadow: 0 2px 12px rgba(0,0,0,.5);
 }
 
 .logo-wrap {
   width: 52px;
   height: 52px;
   flex-shrink: 0;
-  border: 2px solid var(--gold);
-  border-radius: 50%;
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-card);
 }
 
 .logo-wrap img {
@@ -73,44 +81,39 @@ body {
   object-fit: contain;
 }
 
-.logo-placeholder {
-  font-size: 8px;
-  color: var(--gold);
-  font-weight: 700;
-  text-align: center;
-  letter-spacing: 0.5px;
-  line-height: 1.3;
-}
-
 .header-text { flex: 1; }
 
 .header-text h1 {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   letter-spacing: 5px;
-  color: var(--gold-light);
+  color: #ffffff;
   text-transform: uppercase;
+  line-height: 1.1;
 }
 
 .header-text .sub {
   font-size: 10px;
+  font-weight: 400;
   letter-spacing: 2px;
-  color: var(--text-dim);
+  color: var(--pantone-5445);
   text-transform: uppercase;
 }
 
 .mode-badge {
-  background: var(--blue);
-  color: var(--gold-light);
-  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--amarillo-bandera);
+  border: 1px solid var(--amarillo-bandera);
   padding: 5px 14px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 3px;
   border-radius: var(--radius);
 }
 
-/* ── WELCOME SCREEN ── */
+/* ══════════════════════════════════════════════════════════
+   PANTALLA BIENVENIDA
+   ══════════════════════════════════════════════════════════ */
 
 #screen-welcome { min-height: 100vh; display: flex; flex-direction: column; }
 
@@ -121,65 +124,64 @@ body {
   align-items: center;
   justify-content: center;
   padding: 48px 24px;
-  gap: 40px;
+  gap: 36px;
+  background: linear-gradient(180deg, var(--pantone-2955) 0%, var(--bg) 100%);
 }
 
 .welcome-emblem {
-  width: 140px;
-  height: 140px;
-  border: 3px solid var(--gold);
-  border-radius: 50%;
-  overflow: hidden;
+  width: 200px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-card);
-  box-shadow: 0 0 40px rgba(200,160,32,.2);
 }
 
+.welcome-emblem svg,
 .welcome-emblem img {
-  width: 90%;
-  height: 90%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
-.emblem-placeholder {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--gold);
+.welcome-brand {
   text-align: center;
-  letter-spacing: 1px;
-  line-height: 1.6;
 }
 
 .welcome-title {
-  font-size: 40px;
-  font-weight: 700;
+  font-size: 36px;
+  font-weight: 800;
   letter-spacing: 8px;
-  color: var(--gold-light);
-  text-align: center;
+  color: #ffffff;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 
-.welcome-sub {
-  font-size: 12px;
-  letter-spacing: 3px;
-  color: var(--text-dim);
-  text-align: center;
+.brand-name {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: var(--pantone-5445);
   text-transform: uppercase;
-  max-width: 420px;
+  line-height: 1.6;
+}
+
+.brand-name strong {
+  font-weight: 700;
+  color: #ffffff;
 }
 
 .divider {
   width: 100%;
   max-width: 480px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  background: linear-gradient(90deg, transparent, var(--pantone-5405), transparent);
 }
 
 .mode-pick h2 {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 4px;
-  color: var(--text-dim);
+  color: var(--pantone-5445);
   text-align: center;
   margin-bottom: 24px;
   text-transform: uppercase;
@@ -194,45 +196,50 @@ body {
 
 .mode-card {
   background: var(--bg-card);
-  border: 2px solid var(--blue-mid);
+  border: 1px solid var(--pantone-5405);
   border-radius: var(--radius);
-  padding: 36px 52px;
+  padding: 32px 48px;
   cursor: pointer;
   text-align: center;
   transition: border-color .2s, background .2s, transform .15s, box-shadow .2s;
-  min-width: 210px;
+  min-width: 200px;
   user-select: none;
 }
 
 .mode-card:hover {
-  border-color: var(--gold);
-  background: var(--blue);
+  border-color: var(--amarillo-bandera);
+  background: #004a8a;
   transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(0,0,0,.5);
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
 }
 
 .mode-card .code {
-  font-size: 40px;
-  font-weight: 700;
+  font-size: 38px;
+  font-weight: 800;
   letter-spacing: 6px;
-  color: var(--gold-light);
+  color: #ffffff;
   margin-bottom: 6px;
 }
 
+.mode-card:hover .code { color: var(--amarillo-bandera); }
+
 .mode-card .full-name {
   font-size: 11px;
-  letter-spacing: 2px;
-  color: var(--text-dim);
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  color: var(--pantone-5445);
   text-transform: uppercase;
 }
 
 .mode-card .desc {
   font-size: 12px;
-  color: var(--text-dim);
+  color: var(--pantone-5425);
   margin-top: 6px;
 }
 
-/* ── EXAM SCREEN ── */
+/* ══════════════════════════════════════════════════════════
+   PANTALLA EXAMEN
+   ══════════════════════════════════════════════════════════ */
 
 #screen-exam { min-height: 100vh; display: flex; flex-direction: column; }
 
@@ -247,33 +254,33 @@ body {
 .exam-section { margin-bottom: 40px; }
 
 .section-title {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 4px;
-  color: var(--gold-light);
+  color: var(--pantone-5445);
   text-transform: uppercase;
-  border-bottom: 2px solid var(--gold);
+  border-bottom: 2px solid var(--pantone-5405);
   padding-bottom: 8px;
   margin-bottom: 20px;
 }
 
-/* Procedures */
+/* Procedimientos */
 .procedure {
-  background: var(--bg-section);
-  border: 1px solid var(--blue-mid);
+  background: var(--bg-card);
+  border: 1px solid var(--pantone-5405);
   border-radius: var(--radius);
   padding: 18px 20px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .procedure-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: var(--gold);
+  color: #ffffff;
   text-transform: uppercase;
   text-decoration: underline;
-  text-decoration-color: var(--gold);
+  text-decoration-color: var(--pantone-5405);
   text-underline-offset: 4px;
   margin-bottom: 14px;
 }
@@ -286,11 +293,11 @@ body {
 }
 
 .step-num {
-  background: var(--blue-mid);
-  color: var(--gold-light);
-  width: 28px;
-  height: 28px;
-  border-radius: 2px;
+  background: var(--pantone-5405);
+  color: #ffffff;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -303,10 +310,10 @@ body {
   flex: 1;
   background: var(--input-bg);
   border: 1px solid var(--input-border);
-  color: var(--text);
+  color: #ffffff;
   padding: 9px 14px;
-  font-family: inherit;
-  font-size: 14px;
+  font-family: 'Archivo', Arial, sans-serif;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 1px;
   border-radius: var(--radius);
@@ -316,41 +323,41 @@ body {
 
 .step-input:focus {
   outline: none;
-  border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(200,160,32,.2);
+  border-color: var(--amarillo-bandera);
+  box-shadow: 0 0 0 2px rgba(250,194,0,.2);
 }
 
-/* System limits */
+/* Límites de sistemas */
 .limit-category {
-  background: var(--bg-section);
-  border: 1px solid var(--blue-mid);
+  background: var(--bg-card);
+  border: 1px solid var(--pantone-5405);
   border-radius: var(--radius);
   padding: 18px 20px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .category-title {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: var(--gold);
+  color: #ffffff;
   text-transform: uppercase;
   margin-bottom: 14px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--blue-mid);
+  border-bottom: 1px solid var(--pantone-5405);
 }
 
 .subcategory {
   margin-bottom: 14px;
   padding-left: 16px;
-  border-left: 2px solid var(--blue-light);
+  border-left: 2px solid var(--pantone-5425);
 }
 
 .subcategory-title {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 2px;
-  color: var(--text-dim);
+  color: var(--pantone-5445);
   text-transform: uppercase;
   margin-bottom: 10px;
 }
@@ -367,10 +374,10 @@ body {
 .param-label {
   min-width: 210px;
   font-size: 13px;
-  color: var(--text-dim);
+  color: var(--pantone-5445);
 }
 
-.param-dash { color: var(--text-dim); margin-right: 4px; }
+.param-dash { color: var(--pantone-5425); margin-right: 4px; }
 
 .param-inputs {
   display: flex;
@@ -382,11 +389,11 @@ body {
 .limit-input {
   background: var(--input-bg);
   border: 1px solid var(--input-border);
-  color: var(--text);
+  color: #ffffff;
   padding: 6px 10px;
-  font-family: inherit;
+  font-family: 'Archivo', Arial, sans-serif;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 1px;
   border-radius: var(--radius);
   width: 82px;
@@ -396,25 +403,25 @@ body {
 
 .limit-input:focus {
   outline: none;
-  border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(200,160,32,.2);
+  border-color: var(--amarillo-bandera);
+  box-shadow: 0 0 0 2px rgba(250,194,0,.2);
 }
 
 .separator {
   font-size: 12px;
-  color: var(--text-dim);
   font-weight: 600;
+  color: var(--pantone-5425);
   padding: 0 2px;
 }
 
 .unit {
   font-size: 12px;
-  color: var(--text-dim);
+  color: var(--pantone-5425);
   letter-spacing: 1px;
   margin-left: 2px;
 }
 
-/* Submit area */
+/* Área de envío */
 .submit-area {
   display: flex;
   flex-direction: column;
@@ -424,32 +431,33 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
-  color: var(--gold-light);
-  border: 2px solid var(--gold);
-  padding: 15px 48px;
-  font-family: inherit;
-  font-size: 15px;
+  background: var(--pantone-2955);
+  color: #ffffff;
+  border: 2px solid var(--pantone-5405);
+  padding: 14px 48px;
+  font-family: 'Archivo', Arial, sans-serif;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 4px;
   cursor: pointer;
   border-radius: var(--radius);
   text-transform: uppercase;
-  transition: background .2s, transform .15s, box-shadow .2s;
+  transition: border-color .2s, background .2s, transform .15s;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--blue-mid) 0%, #3A6AE0 100%);
+  border-color: var(--amarillo-bandera);
+  background: #004a8a;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,.5);
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
 }
 
 .btn-secondary {
   background: transparent;
-  color: var(--text-dim);
+  color: var(--pantone-5425);
   border: 1px solid var(--input-border);
   padding: 9px 24px;
-  font-family: inherit;
+  font-family: 'Archivo', Arial, sans-serif;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -460,11 +468,13 @@ body {
 }
 
 .btn-secondary:hover {
-  border-color: var(--text-dim);
-  color: var(--text);
+  border-color: var(--pantone-5425);
+  color: #ffffff;
 }
 
-/* ── RESULTS SCREEN ── */
+/* ══════════════════════════════════════════════════════════
+   PANTALLA RESULTADOS
+   ══════════════════════════════════════════════════════════ */
 
 #screen-results { min-height: 100vh; display: flex; flex-direction: column; }
 
@@ -478,7 +488,7 @@ body {
 
 .score-panel {
   background: var(--bg-card);
-  border: 1px solid var(--blue-mid);
+  border: 1px solid var(--pantone-5405);
   border-radius: var(--radius);
   padding: 36px 24px;
   text-align: center;
@@ -487,89 +497,89 @@ body {
 
 .score-value {
   font-size: 80px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 4px;
   line-height: 1;
   margin-bottom: 6px;
 }
 
 .score-value.passed { color: var(--success); }
-.score-value.failed { color: var(--error); }
+.score-value.failed { color: var(--rojo-bandera); }
 
 .result-status {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: 10px;
   margin-bottom: 20px;
 }
 
 .result-status.passed { color: var(--success); }
-.result-status.failed { color: var(--error); }
+.result-status.failed { color: var(--rojo-bandera); }
 
 .result-meta {
   display: flex;
   justify-content: center;
   gap: 40px;
-  color: var(--text-dim);
+  color: var(--pantone-5445);
   font-size: 13px;
   letter-spacing: 1px;
   flex-wrap: wrap;
 }
 
-.result-meta strong { color: var(--text); font-size: 15px; }
+.result-meta strong { color: #ffffff; font-size: 15px; }
 
-/* Review */
+/* Revisión */
 .review-title {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 4px;
-  color: var(--gold-light);
+  color: var(--pantone-5445);
   text-transform: uppercase;
-  border-bottom: 2px solid var(--gold);
+  border-bottom: 2px solid var(--pantone-5405);
   padding-bottom: 8px;
   margin-bottom: 20px;
 }
 
 .review-procedure, .review-category {
-  background: var(--bg-section);
-  border: 1px solid var(--blue-mid);
+  background: var(--bg-card);
+  border: 1px solid var(--pantone-5405);
   border-radius: var(--radius);
   padding: 16px 18px;
   margin-bottom: 10px;
 }
 
 .review-proc-title, .review-cat-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: var(--gold);
+  color: #ffffff;
   text-transform: uppercase;
   margin-bottom: 10px;
 }
 
 .review-proc-title {
   text-decoration: underline;
-  text-decoration-color: var(--gold);
+  text-decoration-color: var(--pantone-5405);
   text-underline-offset: 4px;
 }
 
 .review-cat-title {
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--blue-mid);
+  border-bottom: 1px solid var(--pantone-5405);
 }
 
 .review-sub-title {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 2px;
-  color: var(--text-dim);
+  color: var(--pantone-5445);
   text-transform: uppercase;
   margin-bottom: 8px;
 }
 
 .review-subcategory {
   padding-left: 16px;
-  border-left: 2px solid var(--blue-light);
+  border-left: 2px solid var(--pantone-5425);
   margin-bottom: 12px;
 }
 
@@ -578,19 +588,19 @@ body {
   align-items: center;
   gap: 10px;
   padding: 7px 10px;
-  border-radius: 2px;
+  border-radius: var(--radius);
   margin-bottom: 4px;
   font-size: 13px;
 }
 
 .review-step.correct, .review-param-row.correct {
   background: var(--success-bg);
-  border: 1px solid var(--success-border);
+  border: 1px solid var(--success-bd);
 }
 
 .review-step.incorrect, .review-param-row.incorrect {
   background: var(--error-bg);
-  border: 1px solid var(--error-border);
+  border: 1px solid var(--error-bd);
 }
 
 .correct-answer {
@@ -609,7 +619,7 @@ body {
 }
 
 .user-answer {
-  color: var(--error);
+  color: var(--rojo-bandera);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 13px;
@@ -623,10 +633,10 @@ body {
 }
 
 .check-icon {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   flex-shrink: 0;
-  width: 22px;
+  width: 20px;
   text-align: center;
 }
 
@@ -634,7 +644,7 @@ body {
 .review-param-row.correct .check-icon  { color: var(--success); }
 
 .review-step.incorrect .check-icon,
-.review-param-row.incorrect .check-icon { color: var(--error); }
+.review-param-row.incorrect .check-icon { color: var(--rojo-bandera); }
 
 .results-actions {
   display: flex;
@@ -644,29 +654,16 @@ body {
   flex-wrap: wrap;
 }
 
-/* ── RESPONSIVE ── */
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
 
 @media (max-width: 640px) {
-  .welcome-title        { font-size: 28px; letter-spacing: 4px; }
+  .welcome-title        { font-size: 26px; letter-spacing: 4px; }
   .mode-card            { padding: 24px 32px; min-width: 160px; }
   .mode-card .code      { font-size: 30px; }
   .param-label          { min-width: 160px; font-size: 12px; }
   .score-value          { font-size: 60px; }
   .app-header           { padding: 10px 14px; gap: 10px; }
-  .header-text h1       { font-size: 17px; letter-spacing: 3px; }
-}
-
-/* ── FRANJA BANDERA ESPAÑA (decorativa, pie de header) ── */
-.app-header::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg,
-    #c60b1e 0%, #c60b1e 33%,
-    #f1bf00 33%, #f1bf00 66%,
-    #c60b1e 66%, #c60b1e 100%);
-  opacity: .5;
+  .header-text h1       { font-size: 16px; letter-spacing: 3px; }
 }
