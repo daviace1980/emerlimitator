@@ -3,6 +3,20 @@
 let currentMode = null;
 let examStartTime = null;
 
+// ── Datos dinámicos (admin override via localStorage) ─────────────────────────
+
+const ADMIN_USER = 'Ala23RPAS';
+const ADMIN_PASS = 'AdelanteRPAS';
+const STORAGE_KEY = 'emerlimitator_data';
+
+function getExamData() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) return JSON.parse(s);
+  } catch (e) {}
+  return EXAM_DATA;
+}
+
 // ── Navegación ────────────────────────────────────────────────────────────────
 
 function selectMode(mode) {
@@ -61,7 +75,7 @@ function renderExam() {
   const epSection = el('div', 'exam-section');
   epSection.appendChild(sectionTitle('PROCEDIMIENTOS DE EMERGENCIA'));
 
-  EXAM_DATA.emergencyProcedures
+  getExamData().emergencyProcedures
     .filter(p => p.modes.includes(currentMode))
     .forEach(proc => {
       const box = el('div', 'procedure');
@@ -95,7 +109,7 @@ function renderExam() {
   const slSection = el('div', 'exam-section');
   slSection.appendChild(sectionTitle('LÍMITES DE SISTEMAS'));
 
-  EXAM_DATA.systemLimits.forEach(cat => {
+  getExamData().systemLimits.forEach(cat => {
     const box = el('div', 'limit-category');
     const catTitle = el('h3', 'category-title');
     catTitle.textContent = cat.category;
@@ -181,7 +195,7 @@ function submitExam() {
   const results = [];
 
   // Procedimientos de emergencia
-  EXAM_DATA.emergencyProcedures
+  getExamData().emergencyProcedures
     .filter(p => p.modes.includes(currentMode))
     .forEach(proc => {
       const procResult = { type: 'procedure', title: proc.title, steps: [] };
@@ -212,7 +226,7 @@ function submitExam() {
     });
   }
 
-  EXAM_DATA.systemLimits.forEach(cat => {
+  getExamData().systemLimits.forEach(cat => {
     const catResult = { type: 'limits', category: cat.category, subcategories: [], parameters: [] };
     if (cat.subcategories) {
       cat.subcategories.forEach(sub => {
@@ -341,4 +355,198 @@ function renderParamResults(parameters, container) {
     }
     container.appendChild(row);
   });
+}
+
+// ── Administrador ─────────────────────────────────────────────────────────────
+
+function showAdmin() {
+  hide('screen-welcome');
+  show('screen-admin');
+  setTimeout(() => document.getElementById('admin-username').focus(), 50);
+}
+
+function hideAdmin() {
+  hide('screen-admin');
+  show('screen-welcome');
+  show('admin-login-wrap');
+  hide('admin-editor');
+  document.getElementById('admin-username').value = '';
+  document.getElementById('admin-password').value = '';
+  document.getElementById('admin-login-error').textContent = '';
+  window.scrollTo(0, 0);
+}
+
+function adminLogin() {
+  const user = document.getElementById('admin-username').value;
+  const pass = document.getElementById('admin-password').value;
+  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    hide('admin-login-wrap');
+    show('admin-editor');
+    renderAdminEditor();
+    window.scrollTo(0, 0);
+  } else {
+    const errEl = document.getElementById('admin-login-error');
+    errEl.textContent = 'Credenciales incorrectas. Inténtalo de nuevo.';
+    document.getElementById('admin-password').value = '';
+    document.getElementById('admin-password').focus();
+  }
+}
+
+function renderAdminEditor() {
+  const data = getExamData();
+  const container = document.getElementById('admin-content');
+  container.innerHTML = '';
+
+  // Procedimientos de emergencia
+  const epSection = el('div', 'exam-section');
+  epSection.appendChild(sectionTitle('PROCEDIMIENTOS DE EMERGENCIA'));
+
+  data.emergencyProcedures.forEach(proc => {
+    const box = el('div', 'procedure');
+    const hdr = el('div', 'admin-proc-header');
+    const title = el('h3', 'procedure-title');
+    title.textContent = proc.title;
+    const tag = el('span', 'admin-mode-tag');
+    tag.textContent = proc.modes.join(' · ');
+    hdr.append(title, tag);
+    box.appendChild(hdr);
+
+    proc.steps.forEach((step, idx) => {
+      const row = el('div', 'step-row');
+      const num = el('span', 'step-num');
+      num.textContent = idx + 1;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = `adm_ep_${proc.id}_${idx}`;
+      input.className = 'step-input';
+      input.value = step;
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      input.setAttribute('autocorrect', 'off');
+      input.setAttribute('autocapitalize', 'characters');
+      row.append(num, input);
+      box.appendChild(row);
+    });
+
+    epSection.appendChild(box);
+  });
+
+  container.appendChild(epSection);
+
+  // Límites de sistemas
+  const slSection = el('div', 'exam-section');
+  slSection.appendChild(sectionTitle('LÍMITES DE SISTEMAS'));
+
+  data.systemLimits.forEach(cat => {
+    const box = el('div', 'limit-category');
+    const catTitle = el('h3', 'category-title');
+    catTitle.textContent = cat.category;
+    box.appendChild(catTitle);
+
+    if (cat.subcategories) {
+      cat.subcategories.forEach(sub => {
+        const subDiv = el('div', 'subcategory');
+        const subTitle = el('h4', 'subcategory-title');
+        subTitle.textContent = sub.subcategory;
+        subDiv.appendChild(subTitle);
+        sub.parameters.forEach(p => subDiv.appendChild(renderAdminParamRow(p)));
+        box.appendChild(subDiv);
+      });
+    } else {
+      cat.parameters.forEach(p => box.appendChild(renderAdminParamRow(p)));
+    }
+
+    slSection.appendChild(box);
+  });
+
+  container.appendChild(slSection);
+}
+
+function renderAdminParamRow(param) {
+  const row = el('div', 'param-row');
+  const label = el('span', 'param-label');
+  label.textContent = param.label;
+  const dash = el('span', 'param-dash');
+  dash.textContent = '-';
+  const inputs = el('span', 'param-inputs');
+
+  param.inputs.forEach(item => {
+    if (item.separator !== undefined) {
+      const sep = el('span', 'separator');
+      sep.textContent = item.separator;
+      inputs.appendChild(sep);
+    } else {
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.id = `adm_${item.id}`;
+      inp.className = 'limit-input';
+      inp.value = item.answer;
+      inp.autocomplete = 'off';
+      inp.spellcheck = false;
+      inp.setAttribute('inputmode', 'decimal');
+      inp.setAttribute('autocorrect', 'off');
+      inputs.appendChild(inp);
+    }
+  });
+
+  if (param.suffix) {
+    const unit = el('span', 'unit');
+    unit.textContent = param.suffix;
+    inputs.appendChild(unit);
+  }
+
+  row.append(label, dash, inputs);
+  return row;
+}
+
+function collectAdminData() {
+  const data = JSON.parse(JSON.stringify(getExamData()));
+
+  data.emergencyProcedures.forEach(proc => {
+    proc.steps = proc.steps.map((original, idx) => {
+      const inp = document.getElementById(`adm_ep_${proc.id}_${idx}`);
+      return (inp && inp.value.trim()) ? inp.value.trim() : original;
+    });
+  });
+
+  const processParams = params => {
+    params.forEach(param => {
+      param.inputs.forEach(item => {
+        if (item.separator !== undefined) return;
+        const inp = document.getElementById(`adm_${item.id}`);
+        if (inp && inp.value.trim()) item.answer = inp.value.trim();
+      });
+    });
+  };
+
+  data.systemLimits.forEach(cat => {
+    if (cat.subcategories) {
+      cat.subcategories.forEach(sub => processParams(sub.parameters));
+    } else {
+      processParams(cat.parameters);
+    }
+  });
+
+  return data;
+}
+
+function saveAdminData() {
+  const data = collectAdminData();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  showAdminMsg('✓ Cambios guardados correctamente');
+}
+
+function resetAdminData() {
+  if (!confirm('¿Restaurar todos los valores originales? Se perderán los cambios guardados.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderAdminEditor();
+  showAdminMsg('✓ Valores restaurados a los originales');
+}
+
+function showAdminMsg(text) {
+  const msg = document.getElementById('admin-save-msg');
+  msg.textContent = text;
+  msg.classList.remove('hidden');
+  clearTimeout(msg._t);
+  msg._t = setTimeout(() => msg.classList.add('hidden'), 3000);
 }

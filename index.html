@@ -56,6 +56,10 @@
       </div>
     </div>
 
+    <div class="admin-access">
+      <button class="btn-admin-link" onclick="showAdmin()">Panel de administración</button>
+    </div>
+
   </main>
 </div>
 
@@ -120,6 +124,66 @@
       <button class="btn-secondary"  onclick="restartExam()">← Cambiar modo</button>
     </div>
 
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PANTALLA ADMIN — ADMINISTRACIÓN DE VALORES
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-admin" class="hidden">
+  <header class="app-header">
+    <div class="logo-wrap">
+      <img src="assets/Rokiski%20blanco.png" alt="Rokiski">
+    </div>
+    <div class="header-text">
+      <h1>EMERLIMITATOR</h1>
+      <div class="sub">Panel de administración — valores del examen</div>
+    </div>
+    <span class="mode-badge admin-badge">ADMIN</span>
+  </header>
+
+  <!-- Login -->
+  <div id="admin-login-wrap" class="admin-login-wrap">
+    <div class="admin-login-card">
+      <div class="admin-login-title">ACCESO RESTRINGIDO</div>
+      <div class="admin-login-sub">Credenciales de administrador requeridas</div>
+      <div class="admin-field">
+        <label class="admin-label">USUARIO</label>
+        <input type="text" id="admin-username" class="admin-input"
+               autocomplete="off" spellcheck="false"
+               onkeydown="if(event.key==='Enter')document.getElementById('admin-password').focus()">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">CONTRASEÑA</label>
+        <input type="password" id="admin-password" class="admin-input"
+               onkeydown="if(event.key==='Enter')adminLogin()">
+      </div>
+      <div id="admin-login-error" class="admin-error"></div>
+      <div class="admin-login-actions">
+        <button class="btn-primary" onclick="adminLogin()">ACCEDER</button>
+        <button class="btn-secondary" onclick="hideAdmin()">← Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editor (visible tras login) -->
+  <main id="admin-editor" class="hidden exam-body">
+    <div class="admin-toolbar">
+      <span id="admin-save-msg" class="admin-save-msg hidden"></span>
+      <div class="admin-toolbar-btns">
+        <button class="btn-primary"   onclick="saveAdminData()">GUARDAR CAMBIOS</button>
+        <button class="btn-secondary" onclick="resetAdminData()">Restaurar originales</button>
+        <button class="btn-secondary" onclick="hideAdmin()">← Volver al inicio</button>
+      </div>
+    </div>
+
+    <div id="admin-content"></div>
+
+    <div class="submit-area">
+      <button class="btn-primary"   onclick="saveAdminData()">GUARDAR CAMBIOS</button>
+      <button class="btn-secondary" onclick="resetAdminData()">Restaurar valores originales</button>
+      <button class="btn-secondary" onclick="hideAdmin()">← Volver al inicio</button>
+    </div>
   </main>
 </div>
 
