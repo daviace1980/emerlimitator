@@ -80,6 +80,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 1;
 }
 
 .logo-wrap img {
@@ -88,7 +90,7 @@ body {
   object-fit: contain;
 }
 
-.header-text { flex: 1; }
+.header-text { flex: 1; position: relative; z-index: 1; }
 
 .header-text h1 {
   font-size: 20px;
@@ -116,6 +118,9 @@ body {
   font-weight: 700;
   letter-spacing: 3px;
   border-radius: var(--radius);
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -732,23 +737,58 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════
-   MQ-9 HEADER — vista frontal en todos los headers
+   MQ-9 HEADER — centrado solo en pantalla de examen
    ══════════════════════════════════════════════════════════ */
 
-.header-mq9 {
-  flex: 1;
+.header-mq9-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  min-width: 0;
-  max-width: 360px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .mq9-header-img {
-  height: 58px;
+  height: 60px;
   width: auto;
   display: block;
+}
+
+/* ══════════════════════════════════════════════════════════
+   HEADER RIGHT — badge + botón PDF
+   ══════════════════════════════════════════════════════════ */
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.btn-pdf {
+  background: transparent;
+  border: 1px solid var(--amarillo-bandera);
+  color: var(--amarillo-bandera);
+  padding: 6px 14px;
+  font-family: 'Archivo', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  border-radius: var(--radius);
+  text-transform: uppercase;
+  transition: background .2s, color .2s;
+  white-space: nowrap;
+}
+
+.btn-pdf:hover {
+  background: var(--amarillo-bandera);
+  color: var(--bg);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1195,7 +1235,7 @@ body {
   .score-panel-status        { font-size: 12px; letter-spacing: 4px; }
   .app-header                { padding: 10px 14px; gap: 10px; }
   .header-text h1            { font-size: 16px; letter-spacing: 3px; }
-  .header-mq9                { display: none; }
+  .header-mq9-center         { display: none; }
   #screen-welcome .logo-wrap { width: 72px; height: 72px; }
   .admin-login-card          { padding: 28px 24px; }
   .admin-toolbar             { flex-direction: column; align-items: flex-start; }

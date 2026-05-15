@@ -853,3 +853,26 @@ function removePersonnel(mode, idx) {
   localStorage.setItem(PERSONNEL_KEY, JSON.stringify(data));
   renderPersonnelScreen();
 }
+
+// ── Exportar PDF ──────────────────────────────────────────────────────────────
+
+function exportToPDF() {
+  const name  = (document.getElementById('result-student-name').textContent  || '').trim();
+  const month = (document.getElementById('result-student-month').textContent || '').trim();
+  const parts = [name, month].filter(s => s && s !== '—');
+  const filename = (parts.length ? parts.join('_') : 'EMERLIMITATOR_resultado') + '.pdf';
+
+  const body = document.querySelector('#screen-results .results-body');
+  const actions = body.querySelector('.results-actions');
+  if (actions) actions.style.display = 'none';
+
+  html2pdf().set({
+    margin:      [8, 8, 8, 8],
+    filename,
+    image:       { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#001c36' },
+    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(body).save().then(() => {
+    if (actions) actions.style.display = '';
+  });
+}

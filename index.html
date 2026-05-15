@@ -20,10 +20,6 @@
       <h1>EMERLIMITATOR</h1>
       <div class="sub">Ejército del Aire y del Espacio de España</div>
     </div>
-    <div class="header-mq9" aria-hidden="true">
-      <img src="assets/MQ-9%20Front%20view.jpg" class="mq9-header-img" alt=""
-           onload="removeWhiteBackground(this)">
-    </div>
   </header>
 
   <main class="welcome-body">
@@ -84,8 +80,8 @@
       <h1>EMERLIMITATOR</h1>
       <div class="sub">Examen en curso — introduce las respuestas exactas</div>
     </div>
-    <div class="header-mq9" aria-hidden="true">
-      <img src="assets/MQ-9%20Front%20view.jpg" class="mq9-header-img" alt=""
+    <div class="header-mq9-center" aria-hidden="true">
+      <img src="assets/MQ-9%20PNG/Diapositiva1.png" class="mq9-header-img" alt=""
            onload="removeWhiteBackground(this)">
     </div>
     <span class="mode-badge" id="exam-mode-badge">LRE</span>
@@ -134,11 +130,10 @@
       <h1>EMERLIMITATOR</h1>
       <div class="sub">Resultados del examen</div>
     </div>
-    <div class="header-mq9" aria-hidden="true">
-      <img src="assets/MQ-9%20Front%20view.jpg" class="mq9-header-img" alt=""
-           onload="removeWhiteBackground(this)">
+    <div class="header-right">
+      <span class="mode-badge" id="result-mode-badge">—</span>
+      <button class="btn-pdf" onclick="exportToPDF()">&#8595; PDF</button>
     </div>
-    <span class="mode-badge" id="result-mode-badge">—</span>
   </header>
 
   <main class="results-body">
@@ -189,10 +184,6 @@
     <div class="header-text">
       <h1>EMERLIMITATOR</h1>
       <div class="sub">Panel de administración — valores del examen</div>
-    </div>
-    <div class="header-mq9" aria-hidden="true">
-      <img src="assets/MQ-9%20Front%20view.jpg" class="mq9-header-img" alt=""
-           onload="removeWhiteBackground(this)">
     </div>
     <span class="mode-badge admin-badge">ADMIN</span>
   </header>
@@ -257,10 +248,6 @@
       <h1>EMERLIMITATOR</h1>
       <div class="sub">Gestión de personal — listado de alumnos</div>
     </div>
-    <div class="header-mq9" aria-hidden="true">
-      <img src="assets/MQ-9%20Front%20view.jpg" class="mq9-header-img" alt=""
-           onload="removeWhiteBackground(this)">
-    </div>
     <span class="mode-badge admin-badge">PERSONAL</span>
   </header>
 
@@ -300,6 +287,7 @@
   </main>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="questions.js"></script>
 <script src="app.js"></script>
 </body>
