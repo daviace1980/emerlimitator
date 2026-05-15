@@ -5,9 +5,10 @@ let examStartTime = null;
 
 // ── Datos dinámicos (admin override via localStorage) ─────────────────────────
 
-const ADMIN_USER = 'Ala23RPAS';
-const ADMIN_PASS = 'AdelanteRPAS';
+const ADMIN_USER_DEFAULT = 'Ala23RPAS';
+const ADMIN_PASS_DEFAULT = 'AdelanteRPAS';
 const STORAGE_KEY = 'emerlimitator_data';
+const CREDS_KEY   = 'emerlimitator_creds';
 
 function getExamData() {
   try {
@@ -15,6 +16,14 @@ function getExamData() {
     if (s) return JSON.parse(s);
   } catch (e) {}
   return EXAM_DATA;
+}
+
+function getCredentials() {
+  try {
+    const s = localStorage.getItem(CREDS_KEY);
+    if (s) return JSON.parse(s);
+  } catch (e) {}
+  return { user: ADMIN_USER_DEFAULT, pass: ADMIN_PASS_DEFAULT };
 }
 
 // ── Navegación ────────────────────────────────────────────────────────────────
@@ -185,68 +194,115 @@ function el(tag, cls) {
 // ── Envío y corrección ────────────────────────────────────────────────────────
 
 function submitExam() {
-  const unanswered = countUnanswered();
-  if (unanswered > 0) {
-    if (!confirm(`Quedan ${unanswered} campos sin responder. ¿Deseas enviar igualmente?`)) return;
+  const data = getExamData();
+  const capProcs = data.emergencyProcedures.filter(p => p.modes.includes(currentMode));
+
+  // Contar CAPs rellenos / vacíos
+  let capsFilledCount = 0, capsEmptyCount = 0;
+  capProcs.forEach(proc => {
+    proc.steps.forEach((_, idx) => {
+      const inp = document.getElementById(`ep_${proc.id}_${idx}`);
+      if (inp && inp.value.trim()) capsFilledCount++;
+      else capsEmptyCount++;
+    });
+  });
+
+  if (capsFilledCount === 0) {
+    alert('Los procedimientos de emergencia (CAPs) son obligatorios. Rellena al menos un campo antes de enviar.');
+    return;
+  }
+  if (capsEmptyCount > 0) {
+    if (!confirm(`Quedan ${capsEmptyCount} procedimientos sin responder. ¿Deseas enviar igualmente?`)) return;
+  }
+
+  // Contar límites rellenos / vacíos
+  let limitsFilledCount = 0, limitsEmptyCount = 0;
+  data.systemLimits.forEach(cat => {
+    const countP = params => params.forEach(param => param.inputs.forEach(item => {
+      if (item.separator !== undefined) return;
+      const inp = document.getElementById(item.id);
+      if (inp && inp.value.trim()) limitsFilledCount++;
+      else limitsEmptyCount++;
+    }));
+    if (cat.subcategories) cat.subcategories.forEach(sub => countP(sub.parameters));
+    else countP(cat.parameters);
+  });
+
+  const capsOnly = limitsFilledCount === 0;
+
+  if (!capsOnly && limitsEmptyCount > 0) {
+    if (!confirm(`Quedan ${limitsEmptyCount} límites sin responder. ¿Deseas enviar igualmente?`)) return;
   }
 
   const elapsed = Math.floor((Date.now() - examStartTime) / 1000);
-  let total = 0, correct = 0;
+  let capsTotal = 0, capsCorrect = 0;
+  let limitsTotal = 0, limitsCorrect = 0;
   const results = [];
 
-  // Procedimientos de emergencia
-  getExamData().emergencyProcedures
-    .filter(p => p.modes.includes(currentMode))
-    .forEach(proc => {
-      const procResult = { type: 'procedure', title: proc.title, steps: [] };
-      proc.steps.forEach((answer, idx) => {
-        const inputEl = document.getElementById(`ep_${proc.id}_${idx}`);
-        const userVal = inputEl ? inputEl.value : '';
-        const ok = answersMatch(userVal, answer);
-        total++; if (ok) correct++;
-        procResult.steps.push({ idx: idx + 1, userAnswer: userVal, correctAnswer: answer, correct: ok });
-      });
-      results.push(procResult);
+  // Corregir CAPs
+  capProcs.forEach(proc => {
+    const procResult = { type: 'procedure', title: proc.title, steps: [] };
+    proc.steps.forEach((answer, idx) => {
+      const inputEl = document.getElementById(`ep_${proc.id}_${idx}`);
+      const userVal = inputEl ? inputEl.value : '';
+      const ok = answersMatch(userVal, answer);
+      capsTotal++; if (ok) capsCorrect++;
+      procResult.steps.push({ idx: idx + 1, userAnswer: userVal, correctAnswer: answer, correct: ok });
     });
+    results.push(procResult);
+  });
 
-  // Límites de sistemas
-  function evalParams(parameters, dest) {
-    parameters.forEach(param => {
-      const pResult = { label: param.label, fields: [], allCorrect: true };
-      param.inputs.forEach(item => {
-        if (item.separator !== undefined) return;
-        const inputEl = document.getElementById(item.id);
-        const userVal = inputEl ? inputEl.value : '';
-        const ok = answersMatch(userVal, item.answer);
-        total++; if (ok) correct++;
-        if (!ok) pResult.allCorrect = false;
-        pResult.fields.push({ userAnswer: userVal, correctAnswer: item.answer, correct: ok });
+  // Corregir límites (solo si se rellenó algo)
+  if (!capsOnly) {
+    const evalParams = (parameters, dest) => {
+      parameters.forEach(param => {
+        const pResult = { label: param.label, fields: [], allCorrect: true };
+        param.inputs.forEach(item => {
+          if (item.separator !== undefined) return;
+          const inputEl = document.getElementById(item.id);
+          const userVal = inputEl ? inputEl.value : '';
+          const ok = answersMatch(userVal, item.answer);
+          limitsTotal++; if (ok) limitsCorrect++;
+          if (!ok) pResult.allCorrect = false;
+          pResult.fields.push({ userAnswer: userVal, correctAnswer: item.answer, correct: ok });
+        });
+        dest.push(pResult);
       });
-      dest.push(pResult);
+    };
+    data.systemLimits.forEach(cat => {
+      const catResult = { type: 'limits', category: cat.category, subcategories: [], parameters: [] };
+      if (cat.subcategories) {
+        cat.subcategories.forEach(sub => {
+          const subResult = { subcategory: sub.subcategory, parameters: [] };
+          evalParams(sub.parameters, subResult.parameters);
+          catResult.subcategories.push(subResult);
+        });
+      } else {
+        evalParams(cat.parameters, catResult.parameters);
+      }
+      results.push(catResult);
     });
   }
 
-  getExamData().systemLimits.forEach(cat => {
-    const catResult = { type: 'limits', category: cat.category, subcategories: [], parameters: [] };
-    if (cat.subcategories) {
-      cat.subcategories.forEach(sub => {
-        const subResult = { subcategory: sub.subcategory, parameters: [] };
-        evalParams(sub.parameters, subResult.parameters);
-        catResult.subcategories.push(subResult);
-      });
-    } else {
-      evalParams(cat.parameters, catResult.parameters);
-    }
-    results.push(catResult);
-  });
+  const capsScore    = Math.round((capsCorrect / capsTotal) * 100);
+  const capsPassed   = capsScore === 100;
+  const limitsScore  = capsOnly ? null : (limitsTotal ? Math.round((limitsCorrect / limitsTotal) * 100) : 0);
+  const limitsPassed = capsOnly ? null : limitsScore >= 80;
+  const globalTotal   = capsTotal + (capsOnly ? 0 : limitsTotal);
+  const globalCorrect = capsCorrect + (capsOnly ? 0 : limitsCorrect);
+  const globalScore   = Math.round((globalCorrect / globalTotal) * 100);
+  const overallPassed = capsOnly ? capsPassed : (capsPassed && limitsPassed);
 
-  const score = Math.round((correct / total) * 100);
-  const passed = score >= 80;
   const mins = Math.floor(elapsed / 60);
   const secs = elapsed % 60;
 
   hide('screen-exam');
-  renderResults(results, score, correct, total, passed, mins, secs);
+  renderResults(results, {
+    capsScore, capsPassed, capsCorrect, capsTotal,
+    limitsScore, limitsPassed, limitsCorrect, limitsTotal,
+    globalScore, overallPassed, globalCorrect, globalTotal,
+    capsOnly, mins, secs
+  });
   show('screen-results');
   window.scrollTo(0, 0);
 }
@@ -261,20 +317,41 @@ function countUnanswered() {
 
 // ── Render de resultados ──────────────────────────────────────────────────────
 
-function renderResults(results, score, correct, total, passed, mins, secs) {
-  const scoreEl = document.getElementById('result-score');
-  scoreEl.textContent = `${score}%`;
-  scoreEl.className = `score-value ${passed ? 'passed' : 'failed'}`;
+function renderResults(results, scores) {
+  const {
+    capsScore, capsPassed, capsCorrect, capsTotal,
+    limitsScore, limitsPassed, limitsCorrect, limitsTotal,
+    globalScore, overallPassed, globalCorrect, globalTotal,
+    capsOnly, mins, secs
+  } = scores;
 
-  const statusEl = document.getElementById('result-status');
-  statusEl.textContent = passed ? 'APTO' : 'NO APTO';
-  statusEl.className = `result-status ${passed ? 'passed' : 'failed'}`;
-
-  document.getElementById('result-detail').textContent = `${correct} / ${total}`;
+  document.getElementById('result-mode').textContent = currentMode;
   document.getElementById('result-time').textContent =
     `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  document.getElementById('result-mode').textContent = currentMode;
 
+  // Paneles de puntuación
+  const panelsEl = document.getElementById('score-panels');
+  panelsEl.innerHTML = '';
+
+  panelsEl.appendChild(buildScorePanel(
+    'PROCEDIMIENTOS (CAPs)', capsScore, capsPassed,
+    `${capsCorrect} / ${capsTotal}`, 'mín. 100%', false
+  ));
+
+  if (!capsOnly) {
+    panelsEl.appendChild(buildScorePanel(
+      'LÍMITES DE SISTEMAS', limitsScore, limitsPassed,
+      `${limitsCorrect} / ${limitsTotal}`, 'mín. 80%', false
+    ));
+  }
+
+  panelsEl.appendChild(buildScorePanel(
+    'GLOBAL', globalScore, overallPassed,
+    `${globalCorrect} / ${globalTotal}`,
+    capsOnly ? 'solo CAPs evaluadas' : 'CAPs + Límites', true
+  ));
+
+  // Revisión de respuestas
   const reviewEl = document.getElementById('result-review');
   reviewEl.innerHTML = '';
 
@@ -300,9 +377,9 @@ function renderResults(results, score, correct, total, passed, mins, secs) {
           const cmp = el('div', 'answer-comparison');
           const user = el('span', 'user-answer');
           user.textContent = step.userAnswer || '(vacío)';
-          const correct = el('span', 'correct-label');
-          correct.textContent = `→ ${step.correctAnswer}`;
-          cmp.append(user, correct);
+          const corr = el('span', 'correct-label');
+          corr.textContent = `→ ${step.correctAnswer}`;
+          cmp.append(user, corr);
           row.append(num, cmp, icon);
         }
         section.appendChild(row);
@@ -330,6 +407,28 @@ function renderResults(results, score, correct, total, passed, mins, secs) {
       reviewEl.appendChild(section);
     }
   });
+}
+
+function buildScorePanel(label, score, passed, detail, note, isGlobal) {
+  const panel = el('div', `score-panel-item${isGlobal ? ' panel-global' : ''}${passed ? ' panel-pass' : ' panel-fail'}`);
+
+  const lbl = el('div', 'score-panel-label');
+  lbl.textContent = label;
+
+  const val = el('div', `score-panel-value ${passed ? 'passed' : 'failed'}`);
+  val.textContent = `${score}%`;
+
+  const status = el('div', `score-panel-status ${passed ? 'passed' : 'failed'}`);
+  status.textContent = passed ? 'APTO' : 'NO APTO';
+
+  const det = el('div', 'score-panel-detail');
+  det.textContent = detail;
+
+  const noteEl = el('div', 'score-panel-note');
+  noteEl.textContent = note;
+
+  panel.append(lbl, val, status, det, noteEl);
+  return panel;
 }
 
 function renderParamResults(parameters, container) {
@@ -379,7 +478,8 @@ function hideAdmin() {
 function adminLogin() {
   const user = document.getElementById('admin-username').value;
   const pass = document.getElementById('admin-password').value;
-  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+  const creds = getCredentials();
+  if (user === creds.user && pass === creds.pass) {
     hide('admin-login-wrap');
     show('admin-editor');
     renderAdminEditor();
@@ -396,6 +496,9 @@ function renderAdminEditor() {
   const data = getExamData();
   const container = document.getElementById('admin-content');
   container.innerHTML = '';
+
+  // Sección de credenciales
+  container.appendChild(renderCredentialSection());
 
   // Procedimientos de emergencia
   const epSection = el('div', 'exam-section');
@@ -531,6 +634,33 @@ function collectAdminData() {
 }
 
 function saveAdminData() {
+  // Gestión de credenciales
+  const newUser    = document.getElementById('adm_new_user').value.trim();
+  const newPass    = document.getElementById('adm_new_pass').value;
+  const confirmPass = document.getElementById('adm_confirm_pass').value;
+  const credsErrEl = document.getElementById('adm_creds_error');
+  credsErrEl.textContent = '';
+
+  if (newUser || newPass || confirmPass) {
+    if (newPass !== confirmPass) {
+      credsErrEl.textContent = 'Las contraseñas no coinciden.';
+      document.getElementById('adm_confirm_pass').focus();
+      return;
+    }
+    const current = getCredentials();
+    localStorage.setItem(CREDS_KEY, JSON.stringify({
+      user: newUser || current.user,
+      pass: newPass || current.pass
+    }));
+    document.getElementById('adm_new_user').value = '';
+    document.getElementById('adm_new_pass').value = '';
+    document.getElementById('adm_confirm_pass').value = '';
+    // Update displayed username
+    const userDisplay = document.getElementById('adm_current_user');
+    if (userDisplay) userDisplay.textContent = newUser || current.user;
+  }
+
+  // Guardar datos del examen
   const data = collectAdminData();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   showAdminMsg('✓ Cambios guardados correctamente');
@@ -549,4 +679,72 @@ function showAdminMsg(text) {
   msg.classList.remove('hidden');
   clearTimeout(msg._t);
   msg._t = setTimeout(() => msg.classList.add('hidden'), 3000);
+}
+
+function renderCredentialSection() {
+  const { user } = getCredentials();
+  const wrap = el('div', 'admin-creds-section');
+
+  const title = el('h2', 'section-title');
+  title.textContent = 'ACCESO DE ADMINISTRADOR';
+  wrap.appendChild(title);
+
+  const card = el('div', 'admin-creds-card');
+
+  const current = el('div', 'admin-creds-current');
+  current.innerHTML = `Usuario activo: <strong id="adm_current_user">${user}</strong>`;
+  card.appendChild(current);
+
+  const fields = el('div', 'admin-creds-fields');
+
+  [
+    { id: 'adm_new_user',    label: 'NUEVO USUARIO',         type: 'text',     placeholder: 'Dejar vacío para no cambiar' },
+    { id: 'adm_new_pass',    label: 'NUEVA CONTRASEÑA',      type: 'password', placeholder: '' },
+    { id: 'adm_confirm_pass',label: 'CONFIRMAR CONTRASEÑA',  type: 'password', placeholder: '' }
+  ].forEach(cfg => {
+    const f = el('div', 'admin-field');
+    const lbl = el('label', 'admin-label');
+    lbl.textContent = cfg.label;
+    const inp = document.createElement('input');
+    inp.type = cfg.type;
+    inp.id = cfg.id;
+    inp.className = 'admin-input';
+    inp.placeholder = cfg.placeholder;
+    inp.autocomplete = 'off';
+    f.append(lbl, inp);
+    fields.appendChild(f);
+  });
+
+  card.appendChild(fields);
+
+  const errEl = el('div', 'admin-error');
+  errEl.id = 'adm_creds_error';
+  card.appendChild(errEl);
+
+  wrap.appendChild(card);
+  return wrap;
+}
+
+// ── Utilidad: eliminar fondo blanco de imágenes ───────────────────────────────
+
+function removeWhiteBackground(img, threshold) {
+  if (img.dataset.processed) return;
+  img.dataset.processed = '1';
+  const t = threshold !== undefined ? threshold : 230;
+  const canvas = document.createElement('canvas');
+  canvas.width  = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  try {
+    const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d  = id.data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i] > t && d[i+1] > t && d[i+2] > t) d[i+3] = 0;
+    }
+    ctx.putImageData(id, 0, 0);
+    img.src = canvas.toDataURL('image/png');
+  } catch (e) {
+    img.style.mixBlendMode = 'multiply';
+  }
 }

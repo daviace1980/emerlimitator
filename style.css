@@ -510,35 +510,79 @@ body {
   width: 100%;
 }
 
-.score-panel {
+/* Tres paneles de puntuación */
+.score-panels-wrap {
   background: var(--bg-card);
   border: 1px solid var(--pantone-5405);
   border-radius: var(--radius);
-  padding: 36px 24px;
-  text-align: center;
+  padding: 28px 20px 20px;
   margin-bottom: 32px;
 }
 
-.score-value {
-  font-size: 80px;
-  font-weight: 800;
-  letter-spacing: 4px;
-  line-height: 1;
-  margin-bottom: 6px;
+.score-panels {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
-.score-value.passed { color: var(--success); }
-.score-value.failed { color: var(--rojo-bandera); }
+.score-panel-item {
+  flex: 1;
+  min-width: 160px;
+  text-align: center;
+  padding: 20px 12px;
+  border: 1px solid var(--pantone-5405);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-.result-status {
-  font-size: 24px;
+.score-panel-item.panel-pass { border-color: var(--success-bd); background: var(--success-bg); }
+.score-panel-item.panel-fail { border-color: var(--error-bd);   background: var(--error-bg); }
+.score-panel-item.panel-global { border-width: 2px; }
+
+.score-panel-label {
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 10px;
-  margin-bottom: 20px;
+  letter-spacing: 2.5px;
+  color: var(--pantone-5445);
+  text-transform: uppercase;
 }
 
-.result-status.passed { color: var(--success); }
-.result-status.failed { color: var(--rojo-bandera); }
+.score-panel-value {
+  font-size: 54px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.score-panel-value.passed { color: var(--success); }
+.score-panel-value.failed { color: var(--rojo-bandera); }
+
+.score-panel-status {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 6px;
+}
+
+.score-panel-status.passed { color: var(--success); }
+.score-panel-status.failed { color: var(--rojo-bandera); }
+
+.score-panel-detail {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.score-panel-note {
+  font-size: 9px;
+  color: var(--pantone-5405);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
 
 .result-meta {
   display: flex;
@@ -685,6 +729,57 @@ body {
 #screen-welcome .logo-wrap {
   width: 104px;
   height: 104px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MQ-9 HEADER — vista frontal en todos los headers
+   ══════════════════════════════════════════════════════════ */
+
+.header-mq9 {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 360px;
+}
+
+.mq9-header-img {
+  height: 58px;
+  width: auto;
+  display: block;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MQ-9 BIENVENIDA — dibujo técnico de fondo
+   ══════════════════════════════════════════════════════════ */
+
+.welcome-body { position: relative; }
+
+.mq9-welcome-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 105%;
+  max-width: 960px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.mq9-welcome-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: invert(1);
+  mix-blend-mode: screen;
+  opacity: 0.14;
+}
+
+.welcome-body > *:not(.mq9-welcome-wrap) {
+  position: relative;
+  z-index: 1;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -841,6 +936,35 @@ body {
   text-transform: uppercase;
 }
 
+/* Sección de cambio de credenciales en el editor admin */
+.admin-creds-section {
+  margin-bottom: 32px;
+}
+
+.admin-creds-card {
+  background: var(--bg-section);
+  border: 1px solid var(--pantone-5405);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-creds-current {
+  font-size: 12px;
+  color: var(--pantone-5445);
+  letter-spacing: 1px;
+}
+
+.admin-creds-current strong { color: var(--amarillo-bandera); }
+
+.admin-creds-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
 /* Procedimiento: título + badge de modo en la misma fila */
 .admin-proc-header {
   display: flex;
@@ -874,10 +998,13 @@ body {
   .mode-card                 { padding: 24px 32px; min-width: 160px; }
   .mode-card .code           { font-size: 30px; }
   .param-label               { min-width: 160px; font-size: 12px; }
-  .score-value               { font-size: 60px; }
+  .score-panel-value         { font-size: 38px; }
+  .score-panel-status        { font-size: 12px; letter-spacing: 4px; }
   .app-header                { padding: 10px 14px; gap: 10px; }
   .header-text h1            { font-size: 16px; letter-spacing: 3px; }
+  .header-mq9                { display: none; }
   #screen-welcome .logo-wrap { width: 72px; height: 72px; }
   .admin-login-card          { padding: 28px 24px; }
   .admin-toolbar             { flex-direction: column; align-items: flex-start; }
+  .admin-creds-fields        { grid-template-columns: 1fr; }
 }
