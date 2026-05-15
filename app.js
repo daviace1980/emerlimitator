@@ -7,8 +7,9 @@ let examStartTime = null;
 
 const ADMIN_USER_DEFAULT = 'Ala23RPAS';
 const ADMIN_PASS_DEFAULT = 'AdelanteRPAS';
-const STORAGE_KEY = 'emerlimitator_data';
-const CREDS_KEY   = 'emerlimitator_creds';
+const STORAGE_KEY    = 'emerlimitator_data';
+const CREDS_KEY      = 'emerlimitator_creds';
+const PERSONNEL_KEY  = 'emerlimitator_personnel';
 
 function getExamData() {
   try {
@@ -24,6 +25,14 @@ function getCredentials() {
     if (s) return JSON.parse(s);
   } catch (e) {}
   return { user: ADMIN_USER_DEFAULT, pass: ADMIN_PASS_DEFAULT };
+}
+
+function getPersonnel() {
+  try {
+    const s = localStorage.getItem(PERSONNEL_KEY);
+    if (s) return JSON.parse(s);
+  } catch (e) {}
+  return { LRE: [], MCE: [] };
 }
 
 // ── Navegación ────────────────────────────────────────────────────────────────
@@ -79,6 +88,18 @@ function renderExam() {
   const container = document.getElementById('exam-content');
   container.innerHTML = '';
   document.getElementById('exam-mode-badge').textContent = currentMode;
+
+  // Poblar desplegable de alumnos
+  const nameSelect = document.getElementById('exam-user-name');
+  nameSelect.innerHTML = '<option value="">— Seleccionar alumno —</option>';
+  const names = (getPersonnel()[currentMode] || []);
+  names.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    nameSelect.appendChild(opt);
+  });
+  document.getElementById('exam-month').value = '';
 
   // Sección: Procedimientos de emergencia
   const epSection = el('div', 'exam-section');
@@ -295,13 +316,15 @@ function submitExam() {
 
   const mins = Math.floor(elapsed / 60);
   const secs = elapsed % 60;
+  const studentName  = document.getElementById('exam-user-name').value;
+  const studentMonth = document.getElementById('exam-month').value;
 
   hide('screen-exam');
   renderResults(results, {
     capsScore, capsPassed, capsCorrect, capsTotal,
     limitsScore, limitsPassed, limitsCorrect, limitsTotal,
     globalScore, overallPassed, globalCorrect, globalTotal,
-    capsOnly, mins, secs
+    capsOnly, mins, secs, studentName, studentMonth
   });
   show('screen-results');
   window.scrollTo(0, 0);
@@ -322,12 +345,24 @@ function renderResults(results, scores) {
     capsScore, capsPassed, capsCorrect, capsTotal,
     limitsScore, limitsPassed, limitsCorrect, limitsTotal,
     globalScore, overallPassed, globalCorrect, globalTotal,
-    capsOnly, mins, secs
+    capsOnly, mins, secs, studentName, studentMonth
   } = scores;
 
-  document.getElementById('result-mode').textContent = currentMode;
+  document.getElementById('result-mode-badge').textContent = currentMode;
   document.getElementById('result-time').textContent =
     `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+  // Ficha del alumno
+  const infoEl = document.getElementById('result-student-info');
+  const modeEl = document.getElementById('result-mode');
+  if (modeEl) modeEl.textContent = currentMode;
+  if (studentName || studentMonth) {
+    document.getElementById('result-student-name').textContent  = studentName  || '—';
+    document.getElementById('result-student-month').textContent = studentMonth || '—';
+    infoEl.classList.remove('hidden');
+  } else {
+    infoEl.classList.add('hidden');
+  }
 
   // Paneles de puntuación
   const panelsEl = document.getElementById('score-panels');
@@ -747,4 +782,74 @@ function removeWhiteBackground(img, threshold) {
   } catch (e) {
     img.style.mixBlendMode = 'multiply';
   }
+}
+
+// ── Gestión de personal ───────────────────────────────────────────────────────
+
+function showPersonnel() {
+  hide('screen-admin');
+  show('screen-personnel');
+  renderPersonnelScreen();
+  window.scrollTo(0, 0);
+}
+
+function hidePersonnel() {
+  hide('screen-personnel');
+  show('screen-admin');
+  window.scrollTo(0, 0);
+}
+
+function renderPersonnelScreen() {
+  ['LRE', 'MCE'].forEach(mode => {
+    const listEl = document.getElementById(`personnel-${mode.toLowerCase()}-list`);
+    const names  = getPersonnel()[mode] || [];
+    listEl.innerHTML = '';
+
+    if (names.length === 0) {
+      const empty = el('div', 'personnel-empty');
+      empty.textContent = 'Sin personal registrado';
+      listEl.appendChild(empty);
+      return;
+    }
+
+    names.forEach((name, idx) => {
+      const row    = el('div', 'personnel-row');
+      const nameEl = el('span', 'personnel-name');
+      nameEl.textContent = name;
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn-personnel-del';
+      delBtn.textContent = '×';
+      delBtn.title = 'Eliminar';
+      delBtn.onclick = () => removePersonnel(mode, idx);
+      row.append(nameEl, delBtn);
+      listEl.appendChild(row);
+    });
+  });
+}
+
+function addPersonnel(mode) {
+  const input = document.getElementById(`personnel-${mode.toLowerCase()}-input`);
+  const name  = input.value.trim();
+  if (!name) return;
+
+  const data = getPersonnel();
+  if (!data[mode]) data[mode] = [];
+  if (data[mode].map(n => n.toUpperCase()).includes(name.toUpperCase())) {
+    alert('Ese nombre ya figura en la lista.');
+    return;
+  }
+  data[mode].push(name);
+  data[mode].sort((a, b) => a.localeCompare(b, 'es'));
+  localStorage.setItem(PERSONNEL_KEY, JSON.stringify(data));
+  input.value = '';
+  input.focus();
+  renderPersonnelScreen();
+}
+
+function removePersonnel(mode, idx) {
+  const data = getPersonnel();
+  if (!data[mode]) return;
+  data[mode].splice(idx, 1);
+  localStorage.setItem(PERSONNEL_KEY, JSON.stringify(data));
+  renderPersonnelScreen();
 }

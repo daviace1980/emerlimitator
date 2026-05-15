@@ -989,6 +989,199 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════
+   EXAMEN — barra de alumno y mes
+   ══════════════════════════════════════════════════════════ */
+
+.exam-user-bar {
+  display: flex;
+  gap: 20px;
+  background: var(--bg-section);
+  border: 1px solid var(--pantone-5405);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.exam-user-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.exam-user-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--pantone-5445);
+  text-transform: uppercase;
+}
+
+.exam-user-select {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: #ffffff;
+  padding: 9px 14px;
+  font-family: 'Archivo', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.exam-user-select:focus {
+  outline: none;
+  border-color: var(--amarillo-bandera);
+  box-shadow: 0 0 0 2px rgba(250,194,0,.2);
+}
+
+.exam-user-select option { background: var(--bg); }
+
+/* ══════════════════════════════════════════════════════════
+   RESULTADOS — ficha de alumno
+   ══════════════════════════════════════════════════════════ */
+
+.result-student-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: var(--bg-section);
+  border: 1px solid var(--pantone-5405);
+  border-radius: var(--radius);
+  padding: 14px 24px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.result-student-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0 28px;
+}
+
+.result-student-sep {
+  width: 1px;
+  height: 32px;
+  background: var(--pantone-5405);
+  flex-shrink: 0;
+}
+
+.result-student-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--pantone-5445);
+  text-transform: uppercase;
+}
+
+.result-student-info strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PANTALLA PERSONAL — gestión de alumnos
+   ══════════════════════════════════════════════════════════ */
+
+#screen-personnel { min-height: 100vh; display: flex; flex-direction: column; }
+
+.personnel-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.personnel-section {
+  background: var(--bg-card);
+  border: 1px solid var(--pantone-5405);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.personnel-add-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.personnel-add-row .step-input { flex: 1; font-size: 13px; padding: 8px 12px; }
+.personnel-add-row .btn-primary { padding: 9px 18px; font-size: 11px; letter-spacing: 2px; white-space: nowrap; }
+
+.personnel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.personnel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-section);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  transition: border-color .15s;
+}
+
+.personnel-row:hover { border-color: var(--pantone-5425); }
+
+.personnel-name {
+  font-size: 13px;
+  color: #ffffff;
+  font-weight: 500;
+  flex: 1;
+  letter-spacing: 0.5px;
+}
+
+.btn-personnel-del {
+  background: transparent;
+  border: 1px solid var(--error-bd);
+  color: var(--rojo-bandera);
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s, border-color .15s;
+}
+
+.btn-personnel-del:hover { background: var(--error-bg); border-color: var(--rojo-bandera); }
+
+.personnel-empty {
+  font-size: 11px;
+  color: var(--pantone-5405);
+  text-align: center;
+  padding: 24px 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.btn-personnel {
+  color: var(--amarillo-bandera) !important;
+  border-color: var(--amarillo-bandera) !important;
+}
+
+/* ══════════════════════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════════════════════ */
 
@@ -1007,4 +1200,9 @@ body {
   .admin-login-card          { padding: 28px 24px; }
   .admin-toolbar             { flex-direction: column; align-items: flex-start; }
   .admin-creds-fields        { grid-template-columns: 1fr; }
+  .personnel-sections        { grid-template-columns: 1fr; }
+  .exam-user-bar             { gap: 14px; padding: 12px 14px; }
+  .result-student-info       { gap: 0; padding: 12px 10px; }
+  .result-student-field      { padding: 0 14px; }
+  .result-student-sep        { height: 24px; }
 }

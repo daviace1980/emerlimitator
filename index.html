@@ -92,6 +92,26 @@
   </header>
 
   <main class="exam-body">
+
+    <div class="exam-user-bar">
+      <div class="exam-user-field">
+        <label class="exam-user-label">ALUMNO</label>
+        <select id="exam-user-name" class="exam-user-select">
+          <option value="">— Seleccionar alumno —</option>
+        </select>
+      </div>
+      <div class="exam-user-field">
+        <label class="exam-user-label">MES</label>
+        <select id="exam-month" class="exam-user-select">
+          <option value="">— Seleccionar mes —</option>
+          <option>Enero</option><option>Febrero</option><option>Marzo</option>
+          <option>Abril</option><option>Mayo</option><option>Junio</option>
+          <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+          <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+        </select>
+      </div>
+    </div>
+
     <div id="exam-content"></div>
 
     <div class="submit-area">
@@ -118,10 +138,27 @@
       <img src="assets/MQ-9%20Front%20view.jpg" class="mq9-header-img" alt=""
            onload="removeWhiteBackground(this)">
     </div>
-    <span class="mode-badge" id="result-mode">LRE</span>
+    <span class="mode-badge" id="result-mode-badge">—</span>
   </header>
 
   <main class="results-body">
+
+    <div id="result-student-info" class="result-student-info hidden">
+      <div class="result-student-field">
+        <span class="result-student-lbl">ALUMNO</span>
+        <strong id="result-student-name">—</strong>
+      </div>
+      <div class="result-student-sep"></div>
+      <div class="result-student-field">
+        <span class="result-student-lbl">MES</span>
+        <strong id="result-student-month">—</strong>
+      </div>
+      <div class="result-student-sep"></div>
+      <div class="result-student-field">
+        <span class="result-student-lbl">MODO</span>
+        <strong id="result-mode">—</strong>
+      </div>
+    </div>
 
     <div class="score-panels-wrap">
       <div id="score-panels" class="score-panels"></div>
@@ -191,6 +228,7 @@
       <div class="admin-toolbar-btns">
         <button class="btn-primary"   onclick="saveAdminData()">GUARDAR CAMBIOS</button>
         <button class="btn-secondary" onclick="resetAdminData()">Restaurar originales</button>
+        <button class="btn-secondary btn-personnel" onclick="showPersonnel()">GESTIÓN DE PERSONAL</button>
         <button class="btn-secondary" onclick="hideAdmin()">← Volver al inicio</button>
       </div>
     </div>
@@ -200,7 +238,64 @@
     <div class="submit-area">
       <button class="btn-primary"   onclick="saveAdminData()">GUARDAR CAMBIOS</button>
       <button class="btn-secondary" onclick="resetAdminData()">Restaurar valores originales</button>
+      <button class="btn-secondary btn-personnel" onclick="showPersonnel()">GESTIÓN DE PERSONAL</button>
       <button class="btn-secondary" onclick="hideAdmin()">← Volver al inicio</button>
+    </div>
+  </main>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     PANTALLA PERSONAL — GESTIÓN DE ALUMNOS
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-personnel" class="hidden">
+  <header class="app-header">
+    <div class="logo-wrap">
+      <img src="assets/Rokiski%20blanco.png" alt="Rokiski">
+    </div>
+    <div class="header-text">
+      <h1>EMERLIMITATOR</h1>
+      <div class="sub">Gestión de personal — listado de alumnos</div>
+    </div>
+    <div class="header-mq9" aria-hidden="true">
+      <img src="assets/MQ-9%20Front%20view.jpg" class="mq9-header-img" alt=""
+           onload="removeWhiteBackground(this)">
+    </div>
+    <span class="mode-badge admin-badge">PERSONAL</span>
+  </header>
+
+  <main class="exam-body">
+    <div class="admin-toolbar">
+      <span class="admin-save-msg hidden" id="personnel-save-msg"></span>
+      <div class="admin-toolbar-btns">
+        <button class="btn-secondary" onclick="hidePersonnel()">← Volver al administrador</button>
+      </div>
+    </div>
+
+    <div class="personnel-sections">
+
+      <div class="personnel-section">
+        <h2 class="section-title">PERSONAL LRE</h2>
+        <div class="personnel-add-row">
+          <input type="text" id="personnel-lre-input" class="step-input"
+                 placeholder="Nombre completo"
+                 onkeydown="if(event.key==='Enter')addPersonnel('LRE')">
+          <button class="btn-primary" onclick="addPersonnel('LRE')">AÑADIR</button>
+        </div>
+        <div id="personnel-lre-list" class="personnel-list"></div>
+      </div>
+
+      <div class="personnel-section">
+        <h2 class="section-title">PERSONAL MCE</h2>
+        <div class="personnel-add-row">
+          <input type="text" id="personnel-mce-input" class="step-input"
+                 placeholder="Nombre completo"
+                 onkeydown="if(event.key==='Enter')addPersonnel('MCE')">
+          <button class="btn-primary" onclick="addPersonnel('MCE')">AÑADIR</button>
+        </div>
+        <div id="personnel-mce-list" class="personnel-list"></div>
+      </div>
+
     </div>
   </main>
 </div>
