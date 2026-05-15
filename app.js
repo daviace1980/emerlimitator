@@ -867,9 +867,8 @@ function exportToPDF() {
     .replace(/[^a-zA-Z0-9]+/g, '_')
     .replace(/^_|_$/g, '');
 
-  const caps  = r.capsScore  != null ? `CAPs${r.capsScore}pct_${r.capsPassed  ? 'APTO' : 'NOAPTO'}` : null;
-  const lim   = r.limitsScore != null ? `LIM${r.limitsScore}pct_${r.limitsPassed ? 'APTO' : 'NOAPTO'}` : null;
-  const parts = [r.studentName, r.studentMonth, currentMode, caps, lim]
+  const result = r.overallPassed != null ? (r.overallPassed ? 'APTO' : 'NOAPTO') : null;
+  const parts = [r.studentName, r.studentMonth, currentMode, result]
     .filter(Boolean).map(clean).filter(Boolean);
   const filename = (parts.join('_') || 'EMERLIMITATOR_resultado') + '.pdf';
 
