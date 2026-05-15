@@ -1,7 +1,8 @@
 // EMERLIMITATOR — Lógica de la aplicación
 
-let currentMode = null;
-let examStartTime = null;
+let currentMode     = null;
+let examStartTime   = null;
+let lastExamResult  = null;
 
 // ── Datos dinámicos (admin override via localStorage) ─────────────────────────
 
@@ -318,6 +319,8 @@ function submitExam() {
   const secs = elapsed % 60;
   const studentName  = document.getElementById('exam-user-name').value;
   const studentMonth = document.getElementById('exam-month').value;
+
+  lastExamResult = { studentName, studentMonth, capsScore, capsPassed, limitsScore, limitsPassed, overallPassed, capsOnly };
 
   hide('screen-exam');
   renderResults(results, {
@@ -857,12 +860,20 @@ function removePersonnel(mode, idx) {
 // ── Exportar PDF ──────────────────────────────────────────────────────────────
 
 function exportToPDF() {
-  const name  = (document.getElementById('result-student-name').textContent  || '').trim();
-  const month = (document.getElementById('result-student-month').textContent || '').trim();
-  const parts = [name, month].filter(s => s && s !== '—');
-  const filename = (parts.length ? parts.join('_') : 'EMERLIMITATOR_resultado') + '.pdf';
+  const r = lastExamResult || {};
 
-  const body = document.querySelector('#screen-results .results-body');
+  const clean = s => (s || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
+
+  const caps  = r.capsScore  != null ? `CAPs${r.capsScore}pct_${r.capsPassed  ? 'APTO' : 'NOAPTO'}` : null;
+  const lim   = r.limitsScore != null ? `LIM${r.limitsScore}pct_${r.limitsPassed ? 'APTO' : 'NOAPTO'}` : null;
+  const parts = [r.studentName, r.studentMonth, currentMode, caps, lim]
+    .filter(Boolean).map(clean).filter(Boolean);
+  const filename = (parts.join('_') || 'EMERLIMITATOR_resultado') + '.pdf';
+
+  const body    = document.querySelector('#screen-results .results-body');
   const actions = body.querySelector('.results-actions');
   if (actions) actions.style.display = 'none';
 
@@ -870,8 +881,18 @@ function exportToPDF() {
     margin:      [8, 8, 8, 8],
     filename,
     image:       { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#001c36' },
-    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    html2canvas: {
+      scale:           2,
+      useCORS:         true,
+      backgroundColor: '#001c36',
+      logging:         false,
+      scrollX:         0,
+      scrollY:         0,
+      windowWidth:     body.scrollWidth,
+      windowHeight:    body.scrollHeight
+    },
+    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:   { mode: 'avoid-all' }
   }).from(body).save().then(() => {
     if (actions) actions.style.display = '';
   });

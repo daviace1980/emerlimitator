@@ -71,6 +71,7 @@ body {
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 12px rgba(0,0,0,.5);
+  overflow: hidden;
 }
 
 .logo-wrap {
@@ -753,9 +754,10 @@ body {
 }
 
 .mq9-header-img {
-  height: 60px;
+  height: 100%;
   width: auto;
   display: block;
+  max-height: 120px;
 }
 
 /* ══════════════════════════════════════════════════════════
