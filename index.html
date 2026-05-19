@@ -139,6 +139,7 @@
     <div class="header-right">
       <span class="mode-badge" id="result-mode-badge">—</span>
       <button class="btn-pdf" onclick="showCertificate()">&#8595; PDF</button>
+      <button class="btn-header-back" onclick="restartExam()">← Inicio</button>
     </div>
   </header>
 
@@ -172,8 +173,7 @@
     <div id="result-review"></div>
 
     <div class="results-actions">
-      <button class="btn-primary"    onclick="restartSameMode()">REPETIR EXAMEN</button>
-      <button class="btn-secondary"  onclick="restartExam()">← Cambiar modo</button>
+      <button class="btn-primary" onclick="restartSameMode()">REPETIR EXAMEN</button>
     </div>
 
   </main>
@@ -195,6 +195,7 @@
       <span class="mode-badge" id="cert-mode-badge">—</span>
       <button class="btn-pdf" onclick="exportCertificatePDF()">&#8595; PDF</button>
       <button class="btn-header-back" onclick="hideCertificate()">← Volver</button>
+      <button class="btn-header-back" onclick="restartExam()">← Inicio</button>
     </div>
   </header>
   <main class="cert-body" id="cert-body"></main>

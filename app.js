@@ -1072,7 +1072,9 @@ function renderCertificate() {
 }
 
 function exportCertificatePDF() {
-  const r = lastExamResult || {};
+  const r       = lastExamResult  || {};
+  const results = lastExamResults || [];
+
   const clean = s => (s || '')
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-zA-Z0-9]+/g, '_')
@@ -1082,10 +1084,96 @@ function exportCertificatePDF() {
     .filter(Boolean).map(clean).filter(Boolean);
   const filename = (parts.join('_') || 'EMERLIMITATOR_resultado') + '.pdf';
 
-  const body   = document.getElementById('cert-body');
+  const G = '#2ecc71', R = '#ad2e1c', BD = '#4e738a', DIM = '#b7c7d3';
+  const BG = '#001c36', BGCARD = '#003764', BGSEC = '#002b50';
+  const W = 760; // px — ancho fijo para evitar problemas de centrado/viewport
+
+  function ph(label, score, passed, detail, note, isGlobal) {
+    const c = passed ? G : R, bg = passed ? '#061a0e' : '#1a0505', bd = passed ? '#0d3d1c' : '#4a1010';
+    return `<div style="flex:1;min-width:110px;text-align:center;padding:14px 10px;border:${isGlobal?2:1}px solid ${bd};background:${bg};border-radius:2px;">
+      <div style="font-size:8px;font-weight:700;letter-spacing:2px;color:${DIM};text-transform:uppercase;margin-bottom:6px;">${label}</div>
+      <div style="font-size:36px;font-weight:800;line-height:1;color:${c};">${score}%</div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:3px;margin-top:4px;color:${c};">${passed?'APTO':'NO APTO'}</div>
+      <div style="font-size:9px;color:${DIM};margin-top:5px;">${detail}</div>
+      <div style="font-size:8px;color:${BD};letter-spacing:1px;text-transform:uppercase;">${note}</div>
+    </div>`;
+  }
+
+  let panelsHtml = ph('PROCEDIMIENTOS (CAPs)', r.capsScore, r.capsPassed, `${r.capsCorrect}/${r.capsTotal} correctas`, 'mín. 100%', false);
+  if (!r.capsOnly && r.limitsScore != null)
+    panelsHtml += ph('LÍMITES DE SISTEMAS', r.limitsScore, r.limitsPassed, `${r.limitsCorrect}/${r.limitsTotal} correctas`, 'mín. 80%', false);
+  panelsHtml += ph('GLOBAL', r.globalScore, r.overallPassed, `${r.globalCorrect}/${r.globalTotal} correctas`, r.capsOnly ? 'solo CAPs' : 'CAPs + Límites', true);
+
+  let errHtml = '', hasErrors = false;
+  results.forEach(res => {
+    if (res.type === 'procedure') {
+      res.steps.filter(s => !s.correct).forEach(step => {
+        hasErrors = true;
+        errHtml += `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#1a0505;border:1px solid #4a1010;border-radius:2px;margin-bottom:4px;">
+          <span style="background:${BD};color:#fff;width:20px;height:20px;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">${step.idx}</span>
+          <span style="flex:1;color:${R};font-weight:700;text-transform:uppercase;font-size:11px;">${step.userAnswer||'(vacío)'}</span>
+          <span style="color:${DIM};font-size:11px;padding:0 4px;">→</span>
+          <span style="flex:1;color:${G};font-weight:700;text-transform:uppercase;font-size:11px;">${step.correctAnswer}</span>
+        </div>`;
+      });
+    } else if (res.type === 'limits') {
+      const pp = (params, prefix) => params.filter(p => !p.allCorrect).forEach(param => {
+        hasErrors = true;
+        errHtml += `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#1a0505;border:1px solid #4a1010;border-radius:2px;margin-bottom:4px;">
+          <span style="flex:1;color:${DIM};font-size:11px;">${prefix}${param.label}</span>
+          <span style="color:${R};font-weight:700;font-size:11px;">${param.fields.map(f=>f.userAnswer||'—').join('/')}</span>
+          <span style="color:${DIM};font-size:11px;padding:0 4px;">→</span>
+          <span style="color:${G};font-weight:700;font-size:11px;">${param.fields.map(f=>f.correctAnswer).join('/')}</span>
+        </div>`;
+      });
+      if (res.subcategories && res.subcategories.length) res.subcategories.forEach(sub => pp(sub.parameters, `${res.category} / `));
+      else pp(res.parameters, '');
+    }
+  });
+  if (!hasErrors) errHtml = `<div style="color:${G};text-align:center;padding:16px;font-size:13px;letter-spacing:1px;">Sin errores — resultado perfecto ✓</div>`;
+
+  const html = `<div id="pdf-cert" style="font-family:Arial,sans-serif;background:${BG};color:#fff;width:${W}px;padding:36px 36px 44px;box-sizing:border-box;">
+    <div style="text-align:center;margin-bottom:18px;">
+      <img src="assets/Logo%20EA%20blanco%20version%201.png" style="height:150px;width:auto;" crossorigin="anonymous">
+    </div>
+    <div style="height:6px;background:linear-gradient(90deg,#ad2e1c 25%,#fac200 25%,#fac200 75%,#ad2e1c 75%);border-radius:3px;margin-bottom:18px;"></div>
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:20px;font-weight:800;letter-spacing:6px;text-transform:uppercase;">CERTIFICADO DE EVALUACIÓN</div>
+      <div style="font-size:10px;color:${DIM};letter-spacing:3px;text-transform:uppercase;margin-top:6px;">${currentMode} · ${r.studentMonth||''}</div>
+    </div>
+    <div style="display:flex;background:${BGSEC};border:1px solid ${BD};border-radius:2px;padding:14px 24px;margin-bottom:18px;justify-content:center;align-items:center;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 24px;">
+        <span style="font-size:8px;font-weight:700;letter-spacing:2px;color:${DIM};text-transform:uppercase;">ALUMNO</span>
+        <strong style="font-size:14px;font-weight:700;">${r.studentName||'—'}</strong>
+      </div>
+      <div style="width:1px;height:30px;background:${BD};"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 24px;">
+        <span style="font-size:8px;font-weight:700;letter-spacing:2px;color:${DIM};text-transform:uppercase;">MES</span>
+        <strong style="font-size:14px;font-weight:700;">${r.studentMonth||'—'}</strong>
+      </div>
+      <div style="width:1px;height:30px;background:${BD};"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 24px;">
+        <span style="font-size:8px;font-weight:700;letter-spacing:2px;color:${DIM};text-transform:uppercase;">MODO</span>
+        <strong style="font-size:14px;font-weight:700;">${currentMode}</strong>
+      </div>
+    </div>
+    <div style="background:${BGCARD};border:1px solid ${BD};border-radius:2px;padding:18px;margin-bottom:18px;">
+      <div style="display:flex;gap:10px;">${panelsHtml}</div>
+    </div>
+    <div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:3px;color:${DIM};text-transform:uppercase;border-bottom:2px solid ${BD};padding-bottom:5px;margin-bottom:10px;">ERRORES COMETIDOS</div>
+      ${errHtml}
+    </div>
+  </div>`;
+
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;';
+  wrapper.innerHTML = html;
+  document.body.appendChild(wrapper);
+
+  const target = wrapper.querySelector('#pdf-cert');
   const margin = 8;
-  const pageInnerWidthMm = 210 - margin * 2;
-  const heightMm = Math.ceil(body.scrollHeight * pageInnerWidthMm / body.scrollWidth) + margin * 2;
+  const heightMm = Math.ceil(target.scrollHeight * (210 - margin * 2) / W) + margin * 2;
 
   html2pdf().set({
     margin:      [margin, margin, margin, margin],
@@ -1094,15 +1182,15 @@ function exportCertificatePDF() {
     html2canvas: {
       scale:           2,
       useCORS:         true,
-      backgroundColor: '#001c36',
+      backgroundColor: BG,
       logging:         false,
       scrollX:         0,
       scrollY:         0,
-      windowWidth:     body.scrollWidth,
-      windowHeight:    body.scrollHeight
+      windowWidth:     W,
+      windowHeight:    target.scrollHeight
     },
     jsPDF: { unit: 'mm', format: [210, heightMm], orientation: 'portrait' }
-  }).from(body).save();
+  }).from(target).save().then(() => document.body.removeChild(wrapper));
 }
 
 // ── (obsoleto — mantenido por compatibilidad) ─────────────────────────────────
