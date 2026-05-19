@@ -884,7 +884,7 @@ body {
   opacity: 0.14;
 }
 
-.welcome-body > *:not(.mq9-welcome-wrap) {
+.welcome-body > *:not(.mq9-welcome-wrap):not(.welcome-calendar) {
   position: relative;
   z-index: 1;
 }
