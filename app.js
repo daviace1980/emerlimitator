@@ -847,15 +847,43 @@ function renderPersonnelScreen() {
       const row    = el('div', 'personnel-row');
       const nameEl = el('span', 'personnel-name');
       nameEl.textContent = name;
+
+      const moveWrap = el('span', 'personnel-move-btns');
+      const upBtn  = document.createElement('button');
+      upBtn.className  = 'btn-personnel-move';
+      upBtn.textContent = '↑';
+      upBtn.title      = 'Subir';
+      upBtn.disabled   = idx === 0;
+      upBtn.onclick    = () => movePersonnel(mode, idx, -1);
+      const downBtn = document.createElement('button');
+      downBtn.className  = 'btn-personnel-move';
+      downBtn.textContent = '↓';
+      downBtn.title      = 'Bajar';
+      downBtn.disabled   = idx === names.length - 1;
+      downBtn.onclick    = () => movePersonnel(mode, idx, 1);
+      moveWrap.append(upBtn, downBtn);
+
       const delBtn = document.createElement('button');
-      delBtn.className = 'btn-personnel-del';
+      delBtn.className  = 'btn-personnel-del';
       delBtn.textContent = '×';
-      delBtn.title = 'Eliminar';
-      delBtn.onclick = () => removePersonnel(mode, idx);
-      row.append(nameEl, delBtn);
+      delBtn.title      = 'Eliminar';
+      delBtn.onclick    = () => removePersonnel(mode, idx);
+
+      row.append(nameEl, moveWrap, delBtn);
       listEl.appendChild(row);
     });
   });
+}
+
+function movePersonnel(mode, idx, dir) {
+  const data = getPersonnel();
+  if (!data[mode]) return;
+  const arr = data[mode];
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= arr.length) return;
+  [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+  localStorage.setItem(PERSONNEL_KEY, JSON.stringify(data));
+  renderPersonnelScreen();
 }
 
 function addPersonnel(mode) {

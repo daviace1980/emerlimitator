@@ -133,8 +133,8 @@ body {
 
 /* Logo EA — izquierda en cabecera examen LRE/MCE */
 .logo-ea-header {
-  width: 68px;
-  height: 68px;
+  width: 88px;
+  height: 88px;
   flex-shrink: 0;
 }
 
@@ -1120,7 +1120,7 @@ body {
   color: #ffffff;
   padding: 16px 20px;
   font-family: 'Archivo', Arial, sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   border-radius: var(--radius);
   cursor: pointer;
@@ -1260,6 +1260,37 @@ body {
 }
 
 .btn-personnel-del:hover { background: var(--error-bg); border-color: var(--rojo-bandera); }
+
+.personnel-move-btns {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.btn-personnel-move {
+  background: transparent;
+  border: 1px solid var(--pantone-5405);
+  color: var(--pantone-5445);
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.btn-personnel-move:hover:not(:disabled) {
+  background: var(--bg-section);
+  border-color: var(--pantone-5425);
+  color: #ffffff;
+}
+
+.btn-personnel-move:disabled { opacity: 0.2; cursor: default; }
 
 .personnel-empty {
   font-size: 11px;
