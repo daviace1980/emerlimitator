@@ -87,7 +87,10 @@
       <span class="mode-badge" id="exam-mode-badge">LRE</span>
       <button class="btn-header-back" onclick="restartExam()">← Inicio</button>
     </div>
-    <div id="exam-progress-bar"><div id="exam-progress-fill"></div></div>
+    <div id="exam-progress-bar">
+      <div class="progress-track-half"><div class="progress-fill-half" id="exam-progress-caps-fill"></div></div>
+      <div class="progress-track-half progress-track-sep"><div class="progress-fill-half progress-fill-limits" id="exam-progress-limits-fill"></div></div>
+    </div>
   </header>
 
   <main class="exam-body">
@@ -135,7 +138,7 @@
     </div>
     <div class="header-right">
       <span class="mode-badge" id="result-mode-badge">—</span>
-      <button class="btn-pdf" onclick="exportToPDF()">&#8595; PDF</button>
+      <button class="btn-pdf" onclick="showCertificate()">&#8595; PDF</button>
     </div>
   </header>
 
@@ -175,6 +178,28 @@
 
   </main>
 </div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PANTALLA CERTIFICADO — RESUMEN PREVIO AL PDF
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-certificate" class="hidden">
+  <header class="app-header">
+    <div class="logo-wrap">
+      <img src="assets/Rokiski%20blanco.png" alt="Rokiski">
+    </div>
+    <div class="header-text">
+      <h1>EMERLIMITATOR</h1>
+      <div class="sub">Certificado de resultados del examen</div>
+    </div>
+    <div class="header-right">
+      <span class="mode-badge" id="cert-mode-badge">—</span>
+      <button class="btn-pdf" onclick="exportCertificatePDF()">&#8595; PDF</button>
+      <button class="btn-header-back" onclick="hideCertificate()">← Volver</button>
+    </div>
+  </header>
+  <main class="cert-body" id="cert-body"></main>
+</div>
+
 
 <!-- ══════════════════════════════════════════════════════════
      PANTALLA ADMIN — ADMINISTRACIÓN DE VALORES

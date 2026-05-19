@@ -107,6 +107,7 @@ function renderExam() {
 
   // Sección: Procedimientos de emergencia
   const epSection = el('div', 'exam-section');
+  epSection.id = 'caps-section';
   epSection.appendChild(sectionTitle('PROCEDIMIENTOS DE EMERGENCIA'));
 
   getExamData().emergencyProcedures
@@ -139,8 +140,20 @@ function renderExam() {
 
   container.appendChild(epSection);
 
+  // Botón de entrega parcial — solo CAPs
+  const capsOnlyWrap = el('div', 'caps-submit-wrap');
+  const capsOnlyBtn  = document.createElement('button');
+  capsOnlyBtn.className = 'btn-caps-submit';
+  capsOnlyBtn.textContent = 'EVALUAR SOLO CAPs';
+  capsOnlyBtn.onclick = () => submitExam(true);
+  const capsOnlyNote = el('p', 'caps-submit-note');
+  capsOnlyNote.textContent = 'Solo se evaluarán los procedimientos de emergencia. Los límites de sistemas quedarán sin evaluar.';
+  capsOnlyWrap.append(capsOnlyBtn, capsOnlyNote);
+  container.appendChild(capsOnlyWrap);
+
   // Sección: Límites de sistemas
   const slSection = el('div', 'exam-section');
+  slSection.id = 'limits-section';
   slSection.appendChild(sectionTitle('LÍMITES DE SISTEMAS'));
 
   getExamData().systemLimits.forEach(cat => {
@@ -172,12 +185,15 @@ function renderExam() {
 }
 
 function updateProgressBar() {
-  const inputs = document.querySelectorAll('#exam-content input');
-  if (!inputs.length) return;
-  let filled = 0;
-  inputs.forEach(inp => { if (inp.value.trim()) filled++; });
-  const fill = document.getElementById('exam-progress-fill');
-  if (fill) fill.style.width = (filled / inputs.length * 100).toFixed(1) + '%';
+  const pct = inputs => {
+    if (!inputs.length) return 0;
+    const filled = Array.from(inputs).filter(i => i.value.trim()).length;
+    return (filled / inputs.length * 100).toFixed(1);
+  };
+  const capsFill   = document.getElementById('exam-progress-caps-fill');
+  const limitsFill = document.getElementById('exam-progress-limits-fill');
+  if (capsFill)   capsFill.style.width   = pct(document.querySelectorAll('#caps-section input'))   + '%';
+  if (limitsFill) limitsFill.style.width = pct(document.querySelectorAll('#limits-section input')) + '%';
 }
 
 function setupEnterNavigation() {
@@ -242,7 +258,7 @@ function el(tag, cls) {
 
 // ── Envío y corrección ────────────────────────────────────────────────────────
 
-function submitExam() {
+function submitExam(forceCapsOnly) {
   const data = getExamData();
   const capProcs = data.emergencyProcedures.filter(p => p.modes.includes(currentMode));
 
@@ -264,20 +280,22 @@ function submitExam() {
     if (!confirm(`Quedan ${capsEmptyCount} procedimientos sin responder. ¿Deseas enviar igualmente?`)) return;
   }
 
-  // Contar límites rellenos / vacíos
+  // Contar límites rellenos / vacíos (omitir si forceCapsOnly)
   let limitsFilledCount = 0, limitsEmptyCount = 0;
-  data.systemLimits.forEach(cat => {
-    const countP = params => params.forEach(param => param.inputs.forEach(item => {
-      if (item.separator !== undefined) return;
-      const inp = document.getElementById(item.id);
-      if (inp && inp.value.trim()) limitsFilledCount++;
-      else limitsEmptyCount++;
-    }));
-    if (cat.subcategories) cat.subcategories.forEach(sub => countP(sub.parameters));
-    else countP(cat.parameters);
-  });
+  if (!forceCapsOnly) {
+    data.systemLimits.forEach(cat => {
+      const countP = params => params.forEach(param => param.inputs.forEach(item => {
+        if (item.separator !== undefined) return;
+        const inp = document.getElementById(item.id);
+        if (inp && inp.value.trim()) limitsFilledCount++;
+        else limitsEmptyCount++;
+      }));
+      if (cat.subcategories) cat.subcategories.forEach(sub => countP(sub.parameters));
+      else countP(cat.parameters);
+    });
+  }
 
-  const capsOnly = limitsFilledCount === 0;
+  const capsOnly = forceCapsOnly || limitsFilledCount === 0;
 
   if (!capsOnly && limitsEmptyCount > 0) {
     if (!confirm(`Quedan ${limitsEmptyCount} límites sin responder. ¿Deseas enviar igualmente?`)) return;
@@ -913,7 +931,181 @@ function removePersonnel(mode, idx) {
   renderPersonnelScreen();
 }
 
-// ── Exportar PDF ──────────────────────────────────────────────────────────────
+// ── Certificado y exportación PDF ────────────────────────────────────────────
+
+function showCertificate() {
+  renderCertificate();
+  hide('screen-results');
+  show('screen-certificate');
+  window.scrollTo(0, 0);
+}
+
+function hideCertificate() {
+  hide('screen-certificate');
+  show('screen-results');
+  window.scrollTo(0, 0);
+}
+
+function renderCertificate() {
+  const r       = lastExamResult  || {};
+  const results = lastExamResults || [];
+  const body    = document.getElementById('cert-body');
+  body.innerHTML = '';
+  document.getElementById('cert-mode-badge').textContent = currentMode;
+
+  // Emblema EA
+  const emblemWrap = el('div', 'cert-emblem-wrap');
+  const emblem = document.createElement('img');
+  emblem.src = 'assets/Logo%20EA%20blanco%20version%201.png';
+  emblem.alt = 'Ejército del Aire y del Espacio';
+  emblem.className = 'cert-emblem-img';
+  emblemWrap.appendChild(emblem);
+  body.appendChild(emblemWrap);
+
+  // Franja bandera
+  body.appendChild(el('div', 'cert-stripe'));
+
+  // Título
+  const titleWrap = el('div', 'cert-title-wrap');
+  const titleEl   = el('div', 'cert-title');
+  titleEl.textContent = 'CERTIFICADO DE EVALUACIÓN';
+  const subEl = el('div', 'cert-subtitle');
+  subEl.textContent = `${currentMode} · ${r.studentMonth || ''}`;
+  titleWrap.append(titleEl, subEl);
+  body.appendChild(titleWrap);
+
+  // Ficha alumno
+  const infoCard = el('div', 'result-student-info');
+  [
+    { lbl: 'ALUMNO', val: r.studentName  || '—' },
+    { lbl: 'MES',    val: r.studentMonth || '—' },
+    { lbl: 'MODO',   val: currentMode },
+  ].forEach((item, i) => {
+    if (i > 0) infoCard.appendChild(el('div', 'result-student-sep'));
+    const field = el('div', 'result-student-field');
+    const lbl = el('span', 'result-student-lbl');
+    lbl.textContent = item.lbl;
+    const val = document.createElement('strong');
+    val.textContent = item.val;
+    field.append(lbl, val);
+    infoCard.appendChild(field);
+  });
+  body.appendChild(infoCard);
+
+  // Paneles de puntuación
+  const panelsWrap = el('div', 'score-panels-wrap');
+  const panels     = el('div', 'score-panels');
+  panels.appendChild(buildScorePanel(
+    'PROCEDIMIENTOS (CAPs)', r.capsScore, r.capsPassed,
+    `${r.capsCorrect} / ${r.capsTotal}`, 'mín. 100%', false));
+  if (!r.capsOnly && r.limitsScore != null) {
+    panels.appendChild(buildScorePanel(
+      'LÍMITES DE SISTEMAS', r.limitsScore, r.limitsPassed,
+      `${r.limitsCorrect} / ${r.limitsTotal}`, 'mín. 80%', false));
+  }
+  panels.appendChild(buildScorePanel(
+    'GLOBAL', r.globalScore, r.overallPassed,
+    `${r.globalCorrect} / ${r.globalTotal}`,
+    r.capsOnly ? 'solo CAPs evaluadas' : 'CAPs + Límites', true));
+  panelsWrap.appendChild(panels);
+  body.appendChild(panelsWrap);
+
+  // Errores cometidos
+  const errTitle = el('h3', 'review-title');
+  errTitle.textContent = 'ERRORES COMETIDOS';
+  body.appendChild(errTitle);
+
+  const errContainer = el('div', 'cert-errors');
+  let hasErrors = false;
+
+  results.forEach(result => {
+    if (result.type === 'procedure') {
+      result.steps.filter(s => !s.correct).forEach(step => {
+        hasErrors = true;
+        const row  = el('div', 'review-step incorrect');
+        const num  = el('span', 'step-num');
+        num.textContent = step.idx;
+        const cmp  = el('div', 'answer-comparison');
+        const user = el('span', 'user-answer');
+        user.textContent = step.userAnswer || '(vacío)';
+        const corr = el('span', 'correct-label');
+        corr.textContent = `→ ${step.correctAnswer}`;
+        cmp.append(user, corr);
+        const icon = el('span', 'check-icon');
+        icon.textContent = '✗';
+        row.append(num, cmp, icon);
+        errContainer.appendChild(row);
+      });
+    } else if (result.type === 'limits') {
+      const processParams = (params, prefix) => {
+        params.filter(p => !p.allCorrect).forEach(param => {
+          hasErrors = true;
+          const row  = el('div', 'review-param-row incorrect');
+          const lbl  = el('span', 'param-label');
+          lbl.textContent = prefix + param.label;
+          const cmp  = el('div', 'answer-comparison');
+          const user = el('span', 'user-answer');
+          user.textContent = param.fields.map(f => f.userAnswer || '—').join(' / ');
+          const corr = el('span', 'correct-label');
+          corr.textContent = `→ ${param.fields.map(f => f.correctAnswer).join(' / ')}`;
+          cmp.append(user, corr);
+          const icon = el('span', 'check-icon');
+          icon.textContent = '✗';
+          row.append(lbl, cmp, icon);
+          errContainer.appendChild(row);
+        });
+      };
+      if (result.subcategories && result.subcategories.length > 0) {
+        result.subcategories.forEach(sub => processParams(sub.parameters, `${result.category} / `));
+      } else {
+        processParams(result.parameters, '');
+      }
+    }
+  });
+
+  if (!hasErrors) {
+    const noErr = el('div', 'cert-no-errors');
+    noErr.textContent = 'Sin errores — resultado perfecto ✓';
+    errContainer.appendChild(noErr);
+  }
+  body.appendChild(errContainer);
+}
+
+function exportCertificatePDF() {
+  const r = lastExamResult || {};
+  const clean = s => (s || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
+  const globalResult = r.overallPassed != null ? (r.overallPassed ? 'APTO' : 'NOAPTO') : null;
+  const parts = [r.studentName, r.studentMonth, currentMode, globalResult]
+    .filter(Boolean).map(clean).filter(Boolean);
+  const filename = (parts.join('_') || 'EMERLIMITATOR_resultado') + '.pdf';
+
+  const body   = document.getElementById('cert-body');
+  const margin = 8;
+  const pageInnerWidthMm = 210 - margin * 2;
+  const heightMm = Math.ceil(body.scrollHeight * pageInnerWidthMm / body.scrollWidth) + margin * 2;
+
+  html2pdf().set({
+    margin:      [margin, margin, margin, margin],
+    filename,
+    image:       { type: 'jpeg', quality: 0.95 },
+    html2canvas: {
+      scale:           2,
+      useCORS:         true,
+      backgroundColor: '#001c36',
+      logging:         false,
+      scrollX:         0,
+      scrollY:         0,
+      windowWidth:     body.scrollWidth,
+      windowHeight:    body.scrollHeight
+    },
+    jsPDF: { unit: 'mm', format: [210, heightMm], orientation: 'portrait' }
+  }).from(body).save();
+}
+
+// ── (obsoleto — mantenido por compatibilidad) ─────────────────────────────────
 
 function exportToPDF() {
   const r = lastExamResult || {};

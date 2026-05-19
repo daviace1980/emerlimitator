@@ -807,7 +807,7 @@ body {
   color: var(--bg);
 }
 
-/* Barra de progreso del examen — cubre el border-bottom del header */
+/* Barra de progreso del examen — dividida en CAPs (izq) y Límites (der) */
 #screen-exam .app-header { overflow: visible; }
 
 #exam-progress-bar {
@@ -816,16 +816,29 @@ body {
   left: 0;
   right: 0;
   height: 4px;
-  background: transparent;
+  display: flex;
   pointer-events: none;
 }
 
-#exam-progress-fill {
+.progress-track-half {
+  flex: 1;
+  height: 100%;
+  background: var(--pantone-5405);
+  position: relative;
+}
+
+.progress-track-sep { border-left: 2px solid var(--bg); }
+
+.progress-fill-half {
+  position: absolute;
+  top: 0; left: 0;
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--amarillo-bandera), var(--success));
   transition: width 0.4s ease;
 }
+
+#exam-progress-caps-fill   { background: var(--amarillo-bandera); }
+.progress-fill-limits      { background: var(--success); }
 
 .btn-header-back {
   background: transparent;
@@ -874,6 +887,113 @@ body {
 .welcome-body > *:not(.mq9-welcome-wrap) {
   position: relative;
   z-index: 1;
+}
+
+/* Botón de entrega parcial (solo CAPs) */
+.caps-submit-wrap {
+  background: var(--bg-section);
+  border: 1px solid var(--pantone-5405);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-caps-submit {
+  background: var(--pantone-2955);
+  color: #ffffff;
+  border: 2px solid var(--amarillo-bandera);
+  padding: 12px 36px;
+  font-family: 'Archivo', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  cursor: pointer;
+  border-radius: var(--radius);
+  text-transform: uppercase;
+  transition: background .2s, transform .15s;
+}
+
+.btn-caps-submit:hover { background: #004a8a; transform: translateY(-2px); }
+
+.caps-submit-note {
+  font-size: 10px;
+  color: var(--pantone-5405);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-align: center;
+  max-width: 480px;
+  margin: 0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PANTALLA CERTIFICADO
+   ══════════════════════════════════════════════════════════ */
+
+#screen-certificate { min-height: 100vh; display: flex; flex-direction: column; }
+
+.cert-body {
+  flex: 1;
+  padding: 40px 24px 56px;
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.cert-emblem-wrap { display: flex; justify-content: center; }
+
+.cert-emblem-img {
+  height: 180px;
+  width: auto;
+  object-fit: contain;
+}
+
+.cert-stripe {
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg,
+    var(--rojo-bandera)     25%,
+    var(--amarillo-bandera) 25%,
+    var(--amarillo-bandera) 75%,
+    var(--rojo-bandera)     75%
+  );
+  border-radius: 3px;
+}
+
+.cert-title-wrap { text-align: center; }
+
+.cert-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.cert-subtitle {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--pantone-5445);
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.cert-errors { width: 100%; }
+
+.cert-no-errors {
+  color: var(--success);
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 20px;
+  width: 100%;
 }
 
 /* ══════════════════════════════════════════════════════════
