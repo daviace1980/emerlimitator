@@ -3,6 +3,7 @@
 let currentMode     = null;
 let examStartTime   = null;
 let lastExamResult  = null;
+let lastExamResults = null;
 
 // ── Datos dinámicos (admin override via localStorage) ─────────────────────────
 
@@ -333,7 +334,8 @@ function submitExam() {
   const studentName  = document.getElementById('exam-user-name').value;
   const studentMonth = document.getElementById('exam-month').value;
 
-  lastExamResult = { studentName, studentMonth, capsScore, capsPassed, limitsScore, limitsPassed, overallPassed, capsOnly };
+  lastExamResult  = { studentName, studentMonth, capsScore, capsPassed, capsCorrect, capsTotal, limitsScore, limitsPassed, limitsCorrect, limitsTotal, globalScore, overallPassed, globalCorrect, globalTotal, capsOnly };
+  lastExamResults = results;
 
   hide('screen-exam');
   renderResults(results, {
@@ -874,24 +876,117 @@ function removePersonnel(mode, idx) {
 
 function exportToPDF() {
   const r = lastExamResult || {};
+  const results = lastExamResults || [];
 
   const clean = s => (s || '')
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-zA-Z0-9]+/g, '_')
     .replace(/^_|_$/g, '');
 
-  const result = r.overallPassed != null ? (r.overallPassed ? 'APTO' : 'NOAPTO') : null;
-  const parts = [r.studentName, r.studentMonth, currentMode, result]
+  const globalResult = r.overallPassed != null ? (r.overallPassed ? 'APTO' : 'NOAPTO') : null;
+  const parts = [r.studentName, r.studentMonth, currentMode, globalResult]
     .filter(Boolean).map(clean).filter(Boolean);
   const filename = (parts.join('_') || 'EMERLIMITATOR_resultado') + '.pdf';
 
-  const body    = document.querySelector('#screen-results .results-body');
-  const actions = body.querySelector('.results-actions');
-  if (actions) actions.style.display = 'none';
+  const G = '#2ecc71', R = '#ad2e1c', BD = '#4e738a', DIM = '#b7c7d3';
 
+  function panelHtml(label, score, passed, detail, note, isGlobal) {
+    const c  = passed ? G : R;
+    const bg = passed ? '#061a0e' : '#1a0505';
+    const bd = passed ? '#0d3d1c' : '#4a1010';
+    return `<div style="flex:1;min-width:110px;text-align:center;padding:12px 8px;border:${isGlobal ? 2 : 1}px solid ${bd};background:${bg};border-radius:2px;">
+      <div style="font-size:8px;font-weight:700;letter-spacing:2px;color:${DIM};text-transform:uppercase;margin-bottom:5px;">${label}</div>
+      <div style="font-size:34px;font-weight:800;line-height:1;color:${c};">${score}%</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:3px;margin-top:4px;color:${c};">${passed ? 'APTO' : 'NO APTO'}</div>
+      <div style="font-size:9px;color:${DIM};margin-top:5px;">${detail}</div>
+      <div style="font-size:8px;color:${BD};letter-spacing:1px;text-transform:uppercase;">${note}</div>
+    </div>`;
+  }
+
+  let panelsHtml = panelHtml('PROCEDIMIENTOS (CAPs)', r.capsScore, r.capsPassed,
+    `${r.capsCorrect} / ${r.capsTotal} correctas`, 'mín. 100%', false);
+  if (!r.capsOnly && r.limitsScore != null) {
+    panelsHtml += panelHtml('LÍMITES DE SISTEMAS', r.limitsScore, r.limitsPassed,
+      `${r.limitsCorrect} / ${r.limitsTotal} correctas`, 'mín. 80%', false);
+  }
+  panelsHtml += panelHtml('GLOBAL', r.globalScore, r.overallPassed,
+    `${r.globalCorrect} / ${r.globalTotal} correctas`,
+    r.capsOnly ? 'solo CAPs evaluadas' : 'CAPs + Límites', true);
+
+  let errorsHtml = '';
+  let hasErrors = false;
+
+  results.forEach(result => {
+    if (result.type === 'procedure') {
+      result.steps.filter(s => !s.correct).forEach(step => {
+        hasErrors = true;
+        errorsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:#1a0505;border:1px solid #4a1010;border-radius:2px;margin-bottom:3px;">
+          <span style="background:${BD};color:#fff;width:18px;height:18px;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">${step.idx}</span>
+          <span style="color:${R};font-weight:700;text-transform:uppercase;flex:1;font-size:11px;">${step.userAnswer || '(vacío)'}</span>
+          <span style="color:${DIM};padding:0 4px;font-size:11px;">→</span>
+          <span style="color:${G};font-weight:700;text-transform:uppercase;flex:1;font-size:11px;">${step.correctAnswer}</span>
+        </div>`;
+      });
+    } else if (result.type === 'limits') {
+      const processParams = (params, prefix) => {
+        params.filter(p => !p.allCorrect).forEach(param => {
+          hasErrors = true;
+          const user = param.fields.map(f => f.userAnswer || '—').join(' / ');
+          const corr = param.fields.map(f => f.correctAnswer).join(' / ');
+          errorsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:#1a0505;border:1px solid #4a1010;border-radius:2px;margin-bottom:3px;">
+            <span style="color:${DIM};flex:1;min-width:120px;font-size:11px;">${prefix}${param.label}</span>
+            <span style="color:${R};font-weight:700;font-size:11px;">${user}</span>
+            <span style="color:${DIM};padding:0 4px;font-size:11px;">→</span>
+            <span style="color:${G};font-weight:700;font-size:11px;">${corr}</span>
+          </div>`;
+        });
+      };
+      if (result.subcategories && result.subcategories.length > 0) {
+        result.subcategories.forEach(sub => processParams(sub.parameters, `${result.category} / `));
+      } else {
+        processParams(result.parameters, '');
+      }
+    }
+  });
+
+  if (!hasErrors) {
+    errorsHtml = `<div style="color:${G};text-align:center;padding:14px;font-size:12px;letter-spacing:1px;">Sin errores — resultado perfecto ✓</div>`;
+  }
+
+  const html = `<div id="pdf-root" style="font-family:Arial,sans-serif;background:#001c36;color:#ffffff;padding:24px;width:794px;box-sizing:border-box;">
+    <div style="display:flex;align-items:center;gap:16px;border-bottom:2px solid ${BD};padding-bottom:12px;margin-bottom:14px;">
+      <div style="flex:1;">
+        <div style="font-size:19px;font-weight:800;letter-spacing:5px;">EMERLIMITATOR</div>
+        <div style="font-size:9px;color:${DIM};letter-spacing:2px;text-transform:uppercase;margin-top:2px;">Ejército del Aire y del Espacio de España</div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#fac200;border:1px solid #fac200;padding:4px 12px;border-radius:2px;letter-spacing:3px;">${currentMode}</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <div style="flex:2;background:#003764;border:1px solid ${BD};padding:9px 12px;border-radius:2px;">
+        <div style="font-size:8px;font-weight:700;letter-spacing:2px;color:${DIM};text-transform:uppercase;margin-bottom:3px;">ALUMNO</div>
+        <div style="font-size:13px;font-weight:700;">${r.studentName || '—'}</div>
+      </div>
+      <div style="flex:1;background:#003764;border:1px solid ${BD};padding:9px 12px;border-radius:2px;">
+        <div style="font-size:8px;font-weight:700;letter-spacing:2px;color:${DIM};text-transform:uppercase;margin-bottom:3px;">MES</div>
+        <div style="font-size:13px;font-weight:700;">${r.studentMonth || '—'}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">${panelsHtml}</div>
+    <div>
+      <div style="font-size:8px;font-weight:700;letter-spacing:3px;color:${DIM};text-transform:uppercase;border-bottom:2px solid ${BD};padding-bottom:5px;margin-bottom:8px;">ERRORES COMETIDOS</div>
+      ${errorsHtml}
+    </div>
+  </div>`;
+
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;';
+  wrapper.innerHTML = html;
+  document.body.appendChild(wrapper);
+
+  const target = wrapper.querySelector('#pdf-root');
   const margin = 8;
   const pageInnerWidthMm = 210 - margin * 2;
-  const heightMm = Math.ceil(body.scrollHeight * pageInnerWidthMm / body.scrollWidth) + margin * 2;
+  const heightMm = Math.ceil(target.scrollHeight * pageInnerWidthMm / target.scrollWidth) + margin * 2;
 
   html2pdf().set({
     margin:      [margin, margin, margin, margin],
@@ -904,11 +999,11 @@ function exportToPDF() {
       logging:         false,
       scrollX:         0,
       scrollY:         0,
-      windowWidth:     body.scrollWidth,
-      windowHeight:    body.scrollHeight
+      windowWidth:     target.scrollWidth,
+      windowHeight:    target.scrollHeight
     },
-    jsPDF:       { unit: 'mm', format: [210, heightMm], orientation: 'portrait' }
-  }).from(body).save().then(() => {
-    if (actions) actions.style.display = '';
+    jsPDF: { unit: 'mm', format: [210, heightMm], orientation: 'portrait' }
+  }).from(target).save().then(() => {
+    document.body.removeChild(wrapper);
   });
 }
