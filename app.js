@@ -163,6 +163,19 @@ function renderExam() {
   });
 
   container.appendChild(slSection);
+  setupEnterNavigation();
+}
+
+function setupEnterNavigation() {
+  const inputs = Array.from(document.querySelectorAll('#exam-content input'));
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const next = inputs[i + 1];
+      if (next) next.focus();
+    });
+  });
 }
 
 function renderParamRow(param) {
@@ -876,8 +889,12 @@ function exportToPDF() {
   const actions = body.querySelector('.results-actions');
   if (actions) actions.style.display = 'none';
 
+  const margin = 8;
+  const pageInnerWidthMm = 210 - margin * 2;
+  const heightMm = Math.ceil(body.scrollHeight * pageInnerWidthMm / body.scrollWidth) + margin * 2;
+
   html2pdf().set({
-    margin:      [8, 8, 8, 8],
+    margin:      [margin, margin, margin, margin],
     filename,
     image:       { type: 'jpeg', quality: 0.95 },
     html2canvas: {
@@ -890,8 +907,7 @@ function exportToPDF() {
       windowWidth:     body.scrollWidth,
       windowHeight:    body.scrollHeight
     },
-    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak:   { mode: 'avoid-all' }
+    jsPDF:       { unit: 'mm', format: [210, heightMm], orientation: 'portrait' }
   }).from(body).save().then(() => {
     if (actions) actions.style.display = '';
   });

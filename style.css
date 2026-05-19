@@ -124,6 +124,20 @@ body {
   flex-shrink: 0;
 }
 
+/* Centenario — cabecera de bienvenida */
+.logo-centenario {
+  width: auto;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+/* Logo EA — cabecera examen LRE/MCE (doble del tamaño estándar) */
+.logo-ea-exam {
+  width: 104px;
+  height: 104px;
+  flex-shrink: 0;
+}
+
 /* ══════════════════════════════════════════════════════════
    PANTALLA BIENVENIDA
    ══════════════════════════════════════════════════════════ */
