@@ -37,6 +37,38 @@ function getPersonnel() {
   return { LRE: [], MCE: [] };
 }
 
+// ── Calendario bienvenida ─────────────────────────────────────────────────────
+
+function buildCalendar() {
+  const cal = document.getElementById('welcome-calendar');
+  if (!cal) return;
+  const now   = new Date();
+  const year  = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.getDate();
+
+  const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const DAYS_ES   = ['L','M','X','J','V','S','D'];
+
+  const firstDay = new Date(year, month, 1).getDay(); // 0=Dom
+  const startCol = (firstDay + 6) % 7; // convert to Mon=0
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const dayNames = DAYS_ES.map(d =>
+    `<div class="cal-day-name">${d}</div>`).join('');
+
+  let cells = Array(startCol).fill('<div class="cal-day empty">·</div>');
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cls = d === today ? 'cal-day today' : 'cal-day';
+    cells.push(`<div class="${cls}">${d}</div>`);
+  }
+
+  cal.innerHTML = `
+    <div class="cal-header">${MONTHS_ES[month]} ${year}</div>
+    <div class="cal-grid">${dayNames}${cells.join('')}</div>`;
+}
+
 // ── Navegación ────────────────────────────────────────────────────────────────
 
 function selectMode(mode) {
@@ -1086,7 +1118,7 @@ function exportCertificatePDF() {
 
   const G = '#2ecc71', R = '#ad2e1c', BD = '#4e738a', DIM = '#b7c7d3';
   const BG = '#001c36', BGCARD = '#003764', BGSEC = '#002b50';
-  const W = 760; // px — ancho fijo para evitar problemas de centrado/viewport
+  const W = 900; // px — ancho para orientación horizontal
 
   function ph(label, score, passed, detail, note, isGlobal) {
     const c = passed ? G : R, bg = passed ? '#061a0e' : '#1a0505', bd = passed ? '#0d3d1c' : '#4a1010';
@@ -1167,13 +1199,13 @@ function exportCertificatePDF() {
   </div>`;
 
   const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;';
+  wrapper.style.cssText = 'position:fixed;left:0;top:0;pointer-events:none;z-index:99999;';
   wrapper.innerHTML = html;
   document.body.appendChild(wrapper);
 
   const target = wrapper.querySelector('#pdf-cert');
   const margin = 8;
-  const heightMm = Math.ceil(target.scrollHeight * (210 - margin * 2) / W) + margin * 2;
+  const heightMm = Math.ceil(target.scrollHeight * (297 - margin * 2) / W) + margin * 2;
 
   html2pdf().set({
     margin:      [margin, margin, margin, margin],
@@ -1189,7 +1221,7 @@ function exportCertificatePDF() {
       windowWidth:     W,
       windowHeight:    target.scrollHeight
     },
-    jsPDF: { unit: 'mm', format: [210, heightMm], orientation: 'portrait' }
+    jsPDF: { unit: 'mm', format: [297, heightMm], orientation: 'landscape' }
   }).from(target).save().then(() => document.body.removeChild(wrapper));
 }
 
@@ -1328,3 +1360,7 @@ function exportToPDF() {
     document.body.removeChild(wrapper);
   });
 }
+
+// ── Inicialización ────────────────────────────────────────────────────────────
+
+buildCalendar();

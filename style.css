@@ -174,7 +174,7 @@ body {
   font-size: 36px;
   font-weight: 800;
   letter-spacing: 8px;
-  color: #ffffff;
+  color: var(--amarillo-bandera);
   text-transform: uppercase;
   text-align: center;
   margin-bottom: 8px;
@@ -888,6 +888,57 @@ body {
   position: relative;
   z-index: 1;
 }
+
+/* Calendario bienvenida */
+.welcome-calendar {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 2;
+  background: var(--bg-section);
+  border: 1px solid var(--pantone-5405);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  min-width: 196px;
+  user-select: none;
+}
+.cal-header {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--amarillo-bandera);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.cal-day-name {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--pantone-5445);
+  text-align: center;
+  padding-bottom: 4px;
+  text-transform: uppercase;
+}
+.cal-day {
+  font-size: 11px;
+  text-align: center;
+  padding: 3px 0;
+  border-radius: 2px;
+  color: var(--pantone-5445);
+  line-height: 1.4;
+}
+.cal-day.today {
+  background: var(--amarillo-bandera);
+  color: var(--pantone-2955);
+  font-weight: 800;
+}
+.cal-day.empty { visibility: hidden; }
 
 /* Botón de entrega parcial (solo CAPs) */
 .caps-submit-wrap {
