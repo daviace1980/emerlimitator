@@ -131,10 +131,10 @@ body {
   flex-shrink: 0;
 }
 
-/* Logo EA — cabecera examen LRE/MCE (doble del tamaño estándar) */
-.logo-ea-exam {
-  width: 104px;
-  height: 104px;
+/* Logo EA — izquierda en cabecera examen LRE/MCE */
+.logo-ea-header {
+  width: 68px;
+  height: 68px;
   flex-shrink: 0;
 }
 
@@ -807,6 +807,26 @@ body {
   color: var(--bg);
 }
 
+/* Barra de progreso del examen — cubre el border-bottom del header */
+#screen-exam .app-header { overflow: visible; }
+
+#exam-progress-bar {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: transparent;
+  pointer-events: none;
+}
+
+#exam-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--amarillo-bandera), var(--success));
+  transition: width 0.4s ease;
+}
+
 .btn-header-back {
   background: transparent;
   border: 1px solid var(--pantone-5405);
@@ -1068,11 +1088,11 @@ body {
 
 .exam-user-bar {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   background: var(--bg-section);
   border: 1px solid var(--pantone-5405);
   border-radius: var(--radius);
-  padding: 16px 20px;
+  padding: 22px 28px;
   margin-bottom: 28px;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -1081,15 +1101,15 @@ body {
 .exam-user-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   flex: 1;
-  min-width: 200px;
+  min-width: 220px;
 }
 
 .exam-user-label {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 2.5px;
+  letter-spacing: 3px;
   color: var(--pantone-5445);
   text-transform: uppercase;
 }
@@ -1098,10 +1118,10 @@ body {
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   color: #ffffff;
-  padding: 9px 14px;
+  padding: 16px 20px;
   font-family: 'Archivo', Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 600;
   border-radius: var(--radius);
   cursor: pointer;
   transition: border-color .15s, box-shadow .15s;

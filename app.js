@@ -101,7 +101,9 @@ function renderExam() {
     opt.textContent = name;
     nameSelect.appendChild(opt);
   });
-  document.getElementById('exam-month').value = '';
+  const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('exam-month').value = MONTHS[new Date().getMonth()];
 
   // Sección: Procedimientos de emergencia
   const epSection = el('div', 'exam-section');
@@ -165,6 +167,17 @@ function renderExam() {
 
   container.appendChild(slSection);
   setupEnterNavigation();
+  container.addEventListener('input', updateProgressBar);
+  updateProgressBar();
+}
+
+function updateProgressBar() {
+  const inputs = document.querySelectorAll('#exam-content input');
+  if (!inputs.length) return;
+  let filled = 0;
+  inputs.forEach(inp => { if (inp.value.trim()) filled++; });
+  const fill = document.getElementById('exam-progress-fill');
+  if (fill) fill.style.width = (filled / inputs.length * 100).toFixed(1) + '%';
 }
 
 function setupEnterNavigation() {
