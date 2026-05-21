@@ -123,6 +123,10 @@ function renderExam() {
   container.innerHTML = '';
   document.getElementById('exam-mode-badge').textContent = currentMode;
 
+  const autofillBtn = document.getElementById('btn-autofill');
+  if (currentMode === 'LRE') autofillBtn.classList.remove('hidden');
+  else autofillBtn.classList.add('hidden');
+
   // Poblar desplegable de alumnos
   const nameSelect = document.getElementById('exam-user-name');
   nameSelect.innerHTML = '<option value="">— Seleccionar alumno —</option>';
@@ -226,6 +230,30 @@ function updateProgressBar() {
   const limitsFill = document.getElementById('exam-progress-limits-fill');
   if (capsFill)   capsFill.style.width   = pct(document.querySelectorAll('#caps-section input'))   + '%';
   if (limitsFill) limitsFill.style.width = pct(document.querySelectorAll('#limits-section input')) + '%';
+}
+
+function autoFillExam() {
+  const data = getExamData();
+  data.emergencyProcedures
+    .filter(p => p.modes.includes(currentMode))
+    .forEach(proc => {
+      proc.steps.forEach((step, idx) => {
+        const inp = document.getElementById(`ep_${proc.id}_${idx}`);
+        if (inp) inp.value = step;
+      });
+    });
+  const fillParams = params => params.forEach(param => {
+    param.inputs.forEach(item => {
+      if (item.separator === undefined && item.id) {
+        const inp = document.getElementById(item.id);
+        if (inp) inp.value = item.answer;
+      }
+    });
+  });
+  data.systemLimits.forEach(cat => {
+    if (cat.subcategories) cat.subcategories.forEach(sub => fillParams(sub.parameters));
+    else fillParams(cat.parameters);
+  });
 }
 
 function setupEnterNavigation() {
