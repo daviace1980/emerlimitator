@@ -66,6 +66,7 @@
     </div>
 
     <div class="admin-access">
+      <button class="btn-admin-link" onclick="showHistory()">Clasificación mensual</button>
       <button class="btn-admin-link" onclick="showAdmin()">Panel de administración</button>
     </div>
 
@@ -184,6 +185,44 @@
 
 
 <!-- ══════════════════════════════════════════════════════════
+     PANTALLA HISTORIAL — CLASIFICACIÓN MENSUAL
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-history" class="hidden">
+  <header class="app-header">
+    <div class="logo-wrap">
+      <img src="assets/Rokiski%20blanco.png" alt="Rokiski">
+    </div>
+    <div class="header-text">
+      <h1>EMERLIMITATOR</h1>
+      <div class="sub">Clasificación mensual de resultados</div>
+    </div>
+    <div class="header-right">
+      <button class="btn-pdf" onclick="exportHistoryPDF()">&#8595; PDF</button>
+      <button class="btn-header-back" onclick="hideHistory()">← Inicio</button>
+    </div>
+  </header>
+  <main class="exam-body">
+    <div class="history-controls">
+      <div class="exam-user-field">
+        <label class="exam-user-label">MES</label>
+        <select id="history-month" class="exam-user-select" onchange="renderHistory()">
+          <option>Enero</option><option>Febrero</option><option>Marzo</option>
+          <option>Abril</option><option>Mayo</option><option>Junio</option>
+          <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+          <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+        </select>
+      </div>
+      <div class="exam-user-field">
+        <label class="exam-user-label">AÑO</label>
+        <select id="history-year" class="exam-user-select" onchange="renderHistory()"></select>
+      </div>
+    </div>
+    <div id="history-content"></div>
+  </main>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
      PANTALLA ADMIN — ADMINISTRACIÓN DE VALORES
 ═══════════════════════════════════════════════════════════ -->
 <div id="screen-admin" class="hidden">
@@ -277,6 +316,12 @@
           <input type="text" id="personnel-lre-input" class="step-input"
                  placeholder="Nombre completo"
                  onkeydown="if(event.key==='Enter')addPersonnel('LRE')">
+          <select id="personnel-lre-rank" class="exam-user-select personnel-rank-sel">
+            <option value="">— Rango —</option>
+            <option>Comandante</option><option>Capitán</option><option>Teniente</option>
+            <option>Subteniente</option><option>Brigada</option>
+            <option>Sargento Primero</option><option>Sargento</option>
+          </select>
           <button class="btn-primary" onclick="addPersonnel('LRE')">AÑADIR</button>
         </div>
         <div id="personnel-lre-list" class="personnel-list"></div>
@@ -288,6 +333,12 @@
           <input type="text" id="personnel-mce-input" class="step-input"
                  placeholder="Nombre completo"
                  onkeydown="if(event.key==='Enter')addPersonnel('MCE')">
+          <select id="personnel-mce-rank" class="exam-user-select personnel-rank-sel">
+            <option value="">— Rango —</option>
+            <option>Comandante</option><option>Capitán</option><option>Teniente</option>
+            <option>Subteniente</option><option>Brigada</option>
+            <option>Sargento Primero</option><option>Sargento</option>
+          </select>
           <button class="btn-primary" onclick="addPersonnel('MCE')">AÑADIR</button>
         </div>
         <div id="personnel-mce-list" class="personnel-list"></div>

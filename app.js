@@ -12,6 +12,9 @@ const ADMIN_PASS_DEFAULT = 'AdelanteRPAS';
 const STORAGE_KEY    = 'emerlimitator_data';
 const CREDS_KEY      = 'emerlimitator_creds';
 const PERSONNEL_KEY  = 'emerlimitator_personnel';
+const RESULTS_KEY    = 'emerlimitator_results_v1';
+
+const RANK_ORDER = ['Comandante','Capitán','Teniente','Subteniente','Brigada','Sargento Primero','Sargento'];
 
 function getExamData() {
   try {
@@ -32,9 +35,43 @@ function getCredentials() {
 function getPersonnel() {
   try {
     const s = localStorage.getItem(PERSONNEL_KEY);
-    if (s) return JSON.parse(s);
+    if (s) {
+      const d = JSON.parse(s);
+      ['LRE','MCE'].forEach(m => {
+        if (d[m]) d[m] = d[m].map(e => typeof e === 'string' ? { name: e, rank: '' } : e);
+      });
+      return d;
+    }
   } catch (e) {}
   return { LRE: [], MCE: [] };
+}
+
+function getExamResults() {
+  try {
+    const s = localStorage.getItem(RESULTS_KEY);
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return [];
+}
+
+function saveExamResult(r) {
+  const all = getExamResults();
+  const now = new Date();
+  all.push({
+    id:           Date.now(),
+    date:         now.toISOString().split('T')[0],
+    month:        r.studentMonth,
+    year:         now.getFullYear(),
+    studentName:  r.studentName,
+    rank:         r.studentRank || '',
+    mode:         currentMode,
+    capsScore:    r.capsScore,
+    limitsScore:  r.limitsScore,
+    globalScore:  r.globalScore,
+    overallPassed: r.overallPassed,
+    capsOnly:     r.capsOnly
+  });
+  localStorage.setItem(RESULTS_KEY, JSON.stringify(all));
 }
 
 // ── Calendario bienvenida ─────────────────────────────────────────────────────
@@ -130,11 +167,10 @@ function renderExam() {
   // Poblar desplegable de alumnos
   const nameSelect = document.getElementById('exam-user-name');
   nameSelect.innerHTML = '<option value="">— Seleccionar alumno —</option>';
-  const names = (getPersonnel()[currentMode] || []);
-  names.forEach(name => {
+  (getPersonnel()[currentMode] || []).forEach(p => {
     const opt = document.createElement('option');
-    opt.value = name;
-    opt.textContent = name;
+    opt.value = p.name;
+    opt.textContent = p.rank ? `${p.rank} — ${p.name}` : p.name;
     nameSelect.appendChild(opt);
   });
   const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -424,9 +460,12 @@ function submitExam(forceCapsOnly) {
   const secs = elapsed % 60;
   const studentName  = document.getElementById('exam-user-name').value;
   const studentMonth = document.getElementById('exam-month').value;
+  const pEntry       = (getPersonnel()[currentMode] || []).find(p => p.name === studentName);
+  const studentRank  = pEntry ? (pEntry.rank || '') : '';
 
-  lastExamResult  = { studentName, studentMonth, capsScore, capsPassed, capsCorrect, capsTotal, limitsScore, limitsPassed, limitsCorrect, limitsTotal, globalScore, overallPassed, globalCorrect, globalTotal, capsOnly };
+  lastExamResult  = { studentName, studentRank, studentMonth, capsScore, capsPassed, capsCorrect, capsTotal, limitsScore, limitsPassed, limitsCorrect, limitsTotal, globalScore, overallPassed, globalCorrect, globalTotal, capsOnly };
   lastExamResults = results;
+  if (studentName) saveExamResult(lastExamResult);
 
   hide('screen-exam');
   renderResults(results, {
@@ -921,10 +960,18 @@ function renderPersonnelScreen() {
       return;
     }
 
-    names.forEach((name, idx) => {
+    names.forEach((entry, idx) => {
+      const { name, rank } = entry;
       const row    = el('div', 'personnel-row');
       const nameEl = el('span', 'personnel-name');
-      nameEl.textContent = name;
+      if (rank) {
+        const rankSpan = el('span', 'history-rank');
+        rankSpan.textContent = rank + ' ';
+        nameEl.appendChild(rankSpan);
+        nameEl.appendChild(document.createTextNode(name));
+      } else {
+        nameEl.textContent = name;
+      }
 
       const moveWrap = el('span', 'personnel-move-btns');
       const upBtn  = document.createElement('button');
@@ -965,20 +1012,28 @@ function movePersonnel(mode, idx, dir) {
 }
 
 function addPersonnel(mode) {
-  const input = document.getElementById(`personnel-${mode.toLowerCase()}-input`);
-  const name  = input.value.trim();
+  const input   = document.getElementById(`personnel-${mode.toLowerCase()}-input`);
+  const rankSel = document.getElementById(`personnel-${mode.toLowerCase()}-rank`);
+  const name    = input.value.trim();
   if (!name) return;
 
   const data = getPersonnel();
   if (!data[mode]) data[mode] = [];
-  if (data[mode].map(n => n.toUpperCase()).includes(name.toUpperCase())) {
+  if (data[mode].map(p => p.name.toUpperCase()).includes(name.toUpperCase())) {
     alert('Ese nombre ya figura en la lista.');
     return;
   }
-  data[mode].push(name);
-  data[mode].sort((a, b) => a.localeCompare(b, 'es'));
+  const rank = rankSel ? rankSel.value : '';
+  data[mode].push({ name, rank });
+  data[mode].sort((a, b) => {
+    const ai = RANK_ORDER.indexOf(a.rank), bi = RANK_ORDER.indexOf(b.rank);
+    const ar = ai === -1 ? 999 : ai,       br = bi === -1 ? 999 : bi;
+    if (ar !== br) return ar - br;
+    return a.name.localeCompare(b.name, 'es');
+  });
   localStorage.setItem(PERSONNEL_KEY, JSON.stringify(data));
   input.value = '';
+  if (rankSel) rankSel.value = '';
   input.focus();
   renderPersonnelScreen();
 }
@@ -989,6 +1044,151 @@ function removePersonnel(mode, idx) {
   data[mode].splice(idx, 1);
   localStorage.setItem(PERSONNEL_KEY, JSON.stringify(data));
   renderPersonnelScreen();
+}
+
+// ── Historial / Clasificación mensual ────────────────────────────────────────
+
+function showHistory() {
+  const yearSel = document.getElementById('history-year');
+  yearSel.innerHTML = '';
+  const cy = new Date().getFullYear();
+  for (let y = cy; y >= cy - 3; y--) {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    yearSel.appendChild(opt);
+  }
+  const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('history-month').value = MONTHS[new Date().getMonth()];
+  hide('screen-welcome');
+  show('screen-history');
+  renderHistory();
+  window.scrollTo(0, 0);
+}
+
+function hideHistory() {
+  hide('screen-history');
+  show('screen-welcome');
+  window.scrollTo(0, 0);
+}
+
+function sortedByRank(arr) {
+  return [...arr].sort((a, b) => {
+    const ai = RANK_ORDER.indexOf(a.rank), bi = RANK_ORDER.indexOf(b.rank);
+    const ar = ai === -1 ? 999 : ai,       br = bi === -1 ? 999 : bi;
+    if (ar !== br) return ar - br;
+    return (a.studentName || '').localeCompare(b.studentName || '', 'es');
+  });
+}
+
+function renderHistory() {
+  const month = document.getElementById('history-month').value;
+  const year  = parseInt(document.getElementById('history-year').value);
+  const all   = sortedByRank(getExamResults().filter(r => r.month === month && r.year === year));
+  const wrap  = document.getElementById('history-content');
+  wrap.innerHTML = '';
+
+  if (all.length === 0) {
+    const empty = el('div', 'history-empty');
+    empty.textContent = `Sin resultados registrados para ${month} de ${year}.`;
+    wrap.appendChild(empty);
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'history-table';
+  table.innerHTML = `<thead><tr>
+    <th class="th-center">#</th>
+    <th>RANGO</th><th>NOMBRE</th><th>MODO</th>
+    <th class="th-center">CAPs</th><th class="th-center">LÍMITES</th>
+    <th class="th-center">GLOBAL</th><th>RESULTADO</th>
+  </tr></thead>`;
+
+  const tbody = document.createElement('tbody');
+  all.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    const limTxt = r.limitsScore != null && !r.capsOnly ? r.limitsScore + '%' : 'N/A';
+    tr.innerHTML = `
+      <td class="td-center history-pos">${i + 1}</td>
+      <td><span class="history-rank">${r.rank || '—'}</span></td>
+      <td>${r.studentName || '—'}</td>
+      <td>${r.mode}</td>
+      <td class="td-center">${r.capsScore != null ? r.capsScore + '%' : '—'}</td>
+      <td class="td-center">${limTxt}</td>
+      <td class="td-center">${r.globalScore != null ? r.globalScore + '%' : '—'}</td>
+      <td class="${r.overallPassed ? 'history-result-apto' : 'history-result-noapto'}">${r.overallPassed ? 'APTO' : 'NO APTO'}</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+}
+
+function exportHistoryPDF() {
+  const month = document.getElementById('history-month').value;
+  const year  = parseInt(document.getElementById('history-year').value);
+  const all   = sortedByRank(getExamResults().filter(r => r.month === month && r.year === year));
+
+  const BLUE = '#2F5496', GOLD = '#FFD966', GREY = '#6B7280', LGREY = '#E5E7EB';
+  const DGRN = '#15803d', RED = '#dc2626';
+  const base = window.location.href.replace(/[^/]*$/, '');
+
+  let rows = '';
+  all.forEach((r, i) => {
+    const limTxt = r.limitsScore != null && !r.capsOnly ? r.limitsScore + '%' : 'N/A';
+    const resClr = r.overallPassed ? DGRN : RED;
+    const bg     = i % 2 === 0 ? '#ffffff' : '#F9FAFB';
+    rows += `<tr style="background:${bg}">
+      <td style="padding:5px 8px;text-align:center;font-size:11px;color:${GREY};border-bottom:1px solid ${LGREY};">${i + 1}</td>
+      <td style="padding:5px 8px;font-size:10px;font-weight:700;color:${BLUE};border-bottom:1px solid ${LGREY};">${r.rank || '—'}</td>
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid ${LGREY};">${r.studentName || '—'}</td>
+      <td style="padding:5px 8px;font-size:10px;color:${GREY};border-bottom:1px solid ${LGREY};">${r.mode}</td>
+      <td style="padding:5px 8px;text-align:center;font-size:11px;font-weight:600;color:${r.capsScore===100?DGRN:RED};border-bottom:1px solid ${LGREY};">${r.capsScore != null ? r.capsScore+'%' : '—'}</td>
+      <td style="padding:5px 8px;text-align:center;font-size:11px;font-weight:600;color:${GREY};border-bottom:1px solid ${LGREY};">${limTxt}</td>
+      <td style="padding:5px 8px;text-align:center;font-size:11px;font-weight:600;color:${r.globalScore>=80?DGRN:RED};border-bottom:1px solid ${LGREY};">${r.globalScore != null ? r.globalScore+'%' : '—'}</td>
+      <td style="padding:5px 8px;font-size:10px;font-weight:700;color:${resClr};border-bottom:1px solid ${LGREY};">${r.overallPassed ? 'APTO' : 'NO APTO'}</td>
+    </tr>`;
+  });
+
+  if (!rows) rows = `<tr><td colspan="8" style="padding:24px;text-align:center;color:${GREY};font-size:12px;">Sin resultados para este período</td></tr>`;
+
+  const thStyle = `padding:7px 8px;font-size:9px;font-weight:700;letter-spacing:1.5px;color:${GREY};text-transform:uppercase;border-bottom:2px solid ${LGREY};background:#F3F4F6;`;
+  const html = `<div style="font-family:Arial,sans-serif;background:#fff;color:${BLUE};width:794px;padding:44px 48px 52px;box-sizing:border-box;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;">
+      <img src="${base}assets/Logo%20EA%20azul%20version%202.png" style="height:44px;width:auto;">
+      <div style="text-align:right;font-size:8px;color:${GREY};letter-spacing:1px;text-transform:uppercase;line-height:1.8;">
+        EMERLIMITATOR<br>Ejército del Aire y del Espacio de España
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:800;color:${GOLD};letter-spacing:6px;text-transform:uppercase;margin-bottom:6px;">CLASIFICACIÓN MENSUAL</div>
+      <div style="font-size:14px;font-weight:600;color:${BLUE};">${month} ${year}</div>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,#ad2e1c 25%,${GOLD} 25%,${GOLD} 75%,#ad2e1c 75%);border-radius:2px;margin-bottom:24px;"></div>
+    <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;">
+      <thead><tr>
+        <th style="${thStyle}text-align:center;">#</th>
+        <th style="${thStyle}">RANGO</th><th style="${thStyle}">NOMBRE</th>
+        <th style="${thStyle}">MODO</th><th style="${thStyle}text-align:center;">CAPs</th>
+        <th style="${thStyle}text-align:center;">LÍMITES</th><th style="${thStyle}text-align:center;">GLOBAL</th>
+        <th style="${thStyle}">RESULTADO</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:28px;padding-top:10px;border-top:1px solid ${LGREY};display:flex;justify-content:space-between;">
+      <span style="font-size:8px;color:${GREY};letter-spacing:1px;">Ejército del Aire y del Espacio de España</span>
+      <span style="font-size:8px;color:${GREY};">EMERLIMITATOR</span>
+    </div>
+  </div>`;
+
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`<!DOCTYPE html><html lang="es"><head>
+    <meta charset="UTF-8"><title>CLASIFICACION_${month}_${year}</title>
+    <style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff}
+    @page{size:A4 portrait;margin:0}
+    @media print{html,body{width:210mm}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+    </style></head><body>${html}</body></html>`);
+  printWin.document.close();
+  printWin.addEventListener('load', () => setTimeout(() => printWin.print(), 400));
 }
 
 // ── Exportación PDF ───────────────────────────────────────────────────────────

@@ -881,7 +881,7 @@ body {
   display: block;
   filter: invert(1);
   mix-blend-mode: screen;
-  opacity: 0.3;
+  opacity: 0.5;
 }
 
 .welcome-body > *:not(.mq9-welcome-wrap):not(.welcome-calendar) {
@@ -1475,6 +1475,85 @@ body {
 .btn-personnel {
   color: var(--amarillo-bandera) !important;
   border-color: var(--amarillo-bandera) !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   HISTORIAL — CLASIFICACIÓN MENSUAL
+   ══════════════════════════════════════════════════════════ */
+
+.history-controls {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Archivo', Arial, sans-serif;
+}
+
+.history-table th {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--pantone-5445);
+  text-transform: uppercase;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--pantone-5405);
+  text-align: left;
+  white-space: nowrap;
+  background: var(--bg-section);
+}
+
+.history-table th.th-center { text-align: center; }
+
+.history-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--pantone-5405);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.history-table td.td-center { text-align: center; }
+
+.history-table tbody tr:hover { background: var(--bg-section); }
+
+.history-pos {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pantone-5445);
+  text-align: center;
+  min-width: 28px;
+}
+
+.history-rank {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--amarillo-bandera);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.history-result-apto   { color: var(--success); font-weight: 700; letter-spacing: 1px; }
+.history-result-noapto { color: var(--error);   font-weight: 700; letter-spacing: 1px; }
+
+.history-empty {
+  text-align: center;
+  color: var(--pantone-5445);
+  padding: 60px 20px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  border: 1px dashed var(--pantone-5405);
+  border-radius: var(--radius);
+}
+
+.personnel-rank-sel {
+  width: 160px;
+  flex-shrink: 0;
 }
 
 /* ══════════════════════════════════════════════════════════
