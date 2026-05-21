@@ -1190,11 +1190,12 @@ function exportCertificatePDF() {
   const overallText  = r.overallPassed ? 'APTO' : 'NO APTO';
   const scopeText    = r.capsOnly ? 'CAPs' : 'CAPs y Límites';
   const modeLabel    = r.capsOnly ? `${currentMode} — Solo CAPs` : currentMode;
+  const base = window.location.href.replace(/[^/]*$/, '');
 
   const html = `<div id="pdf-cert" style="font-family:Arial,sans-serif;background:#ffffff;color:${BLUE};width:${W}px;padding:48px 56px 56px;box-sizing:border-box;">
 
     <div style="margin-bottom:40px;">
-      <img src="assets/Logo%20EA%20azul%20version%202.png" style="height:52px;width:auto;" crossorigin="anonymous">
+      <img src="${base}assets/Logo%20EA%20azul%20version%202.png" style="height:52px;width:auto;">
     </div>
 
     <div style="text-align:center;margin-bottom:22px;">
@@ -1240,29 +1241,25 @@ function exportCertificatePDF() {
 
   </div>`;
 
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'position:fixed;left:0;top:0;pointer-events:none;z-index:99999;';
-  wrapper.innerHTML = html;
-  document.body.appendChild(wrapper);
-
-  const target = wrapper.querySelector('#pdf-cert');
-
-  html2pdf().set({
-    margin:      0,
-    filename,
-    image:       { type: 'jpeg', quality: 0.97 },
-    html2canvas: {
-      scale:           2,
-      useCORS:         true,
-      backgroundColor: '#ffffff',
-      logging:         false,
-      scrollX:         0,
-      scrollY:         0,
-      windowWidth:     W,
-      windowHeight:    target.scrollHeight
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  }).from(target).save().then(() => document.body.removeChild(wrapper));
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="es"><head>
+  <meta charset="UTF-8">
+  <title>${filename.replace('.pdf','')}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #fff; }
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      html, body { width: 210mm; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head><body>${html}</body></html>`);
+  printWin.document.close();
+  printWin.addEventListener('load', () => {
+    setTimeout(() => { printWin.print(); }, 400);
+  });
 }
 
 // ── (obsoleto — mantenido por compatibilidad) ─────────────────────────────────
