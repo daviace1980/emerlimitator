@@ -1072,6 +1072,17 @@ function hideHistory() {
   window.scrollTo(0, 0);
 }
 
+function deleteMonthResults() {
+  const month = document.getElementById('history-month').value;
+  const year  = parseInt(document.getElementById('history-year').value);
+  const count = getExamResults().filter(r => r.month === month && r.year === year).length;
+  if (count === 0) { alert(`No hay resultados registrados para ${month} de ${year}.`); return; }
+  if (!confirm(`¿Eliminar los ${count} resultado${count !== 1 ? 's' : ''} de ${month} de ${year}? Esta acción no se puede deshacer.`)) return;
+  const remaining = getExamResults().filter(r => !(r.month === month && r.year === year));
+  localStorage.setItem(RESULTS_KEY, JSON.stringify(remaining));
+  renderHistory();
+}
+
 function sortedByRank(arr) {
   return [...arr].sort((a, b) => {
     const ai = RANK_ORDER.indexOf(a.rank), bi = RANK_ORDER.indexOf(b.rank);
