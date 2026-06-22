@@ -1381,7 +1381,7 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════
-   EXAMEN — barra de alumno y mes
+   EXAMEN — barra de tripulante y mes
    ══════════════════════════════════════════════════════════ */
 
 .exam-user-bar {
@@ -1436,7 +1436,7 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════
-   RESULTADOS — ficha de alumno
+   RESULTADOS — ficha de tripulante
    ══════════════════════════════════════════════════════════ */
 
 .result-student-info {
@@ -1483,7 +1483,7 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════
-   PANTALLA PERSONAL — gestión de alumnos
+   PANTALLA PERSONAL — gestión de tripulantes
    ══════════════════════════════════════════════════════════ */
 
 #screen-personnel {

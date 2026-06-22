@@ -164,9 +164,9 @@ function renderExam() {
   if (currentMode === 'LRE') autofillBtn.classList.remove('hidden');
   else autofillBtn.classList.add('hidden');
 
-  // Poblar desplegable de alumnos
+  // Poblar desplegable de tripulantes
   const nameSelect = document.getElementById('exam-user-name');
-  nameSelect.innerHTML = '<option value="">— Seleccionar alumno —</option>';
+  nameSelect.innerHTML = '<option value="">— Seleccionar tripulante —</option>';
   (getPersonnel()[currentMode] || []).forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.name;
@@ -500,7 +500,7 @@ function renderResults(results, scores) {
   document.getElementById('result-time').textContent =
     `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
-  // Ficha del alumno
+  // Ficha del tripulante
   const infoEl = document.getElementById('result-student-info');
   const modeEl = document.getElementById('result-mode');
   if (modeEl) modeEl.textContent = currentMode;
@@ -1308,7 +1308,7 @@ function exportCertificatePDF() {
     <div style="height:5px;background:linear-gradient(90deg,#ad2e1c 25%,${GOLD} 25%,${GOLD} 75%,#ad2e1c 75%);border-radius:2px;margin-bottom:32px;"></div>
 
     <div style="text-align:center;margin-bottom:28px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:${GREY};text-transform:uppercase;margin-bottom:8px;">ALUMNO</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:${GREY};text-transform:uppercase;margin-bottom:8px;">TRIPULANTE</div>
       <div style="font-size:24px;font-weight:700;color:${BLUE};margin-bottom:16px;">${r.studentName||'—'}</div>
       <table style="margin:0 auto;border-collapse:collapse;">
         <tr>
@@ -1454,7 +1454,7 @@ function exportToPDF() {
     </div>
     <div style="display:flex;gap:10px;margin-bottom:14px;">
       <div style="flex:2;background:#003764;border:1px solid ${BD};padding:9px 12px;border-radius:2px;">
-        <div style="font-size:8px;font-weight:700;letter-spacing:2px;color:${DIM};text-transform:uppercase;margin-bottom:3px;">ALUMNO</div>
+        <div style="font-size:8px;font-weight:700;letter-spacing:2px;color:${DIM};text-transform:uppercase;margin-bottom:3px;">TRIPULANTE</div>
         <div style="font-size:13px;font-weight:700;">${r.studentName || '—'}</div>
       </div>
       <div style="flex:1;background:#003764;border:1px solid ${BD};padding:9px 12px;border-radius:2px;">
