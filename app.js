@@ -46,6 +46,29 @@ function getPersonnel() {
   return { LRE: [], MCE: [] };
 }
 
+// ── Sincronización con servidor local ─────────────────────────────────────────
+
+function saveToServer(endpoint, data) {
+  if (!window.location.hostname) return; // file:// — sin servidor
+  fetch(`/api/${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).catch(() => {});
+}
+
+async function syncFromServer() {
+  if (!window.location.hostname) return;
+  try {
+    const [p, c] = await Promise.all([
+      fetch('/api/personnel').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/api/credentials').then(r => r.ok ? r.json() : null).catch(() => null)
+    ]);
+    if (p) localStorage.setItem(PERSONNEL_KEY, JSON.stringify(p));
+    if (c) localStorage.setItem(CREDS_KEY, JSON.stringify(c));
+  } catch (e) {}
+}
+
 function getExamResults() {
   try {
     const s = localStorage.getItem(RESULTS_KEY);
@@ -831,10 +854,9 @@ function saveAdminData() {
       return;
     }
     const current = getCredentials();
-    localStorage.setItem(CREDS_KEY, JSON.stringify({
-      user: newUser || current.user,
-      pass: newPass || current.pass
-    }));
+    const newCreds = { user: newUser || current.user, pass: newPass || current.pass };
+    localStorage.setItem(CREDS_KEY, JSON.stringify(newCreds));
+    saveToServer('credentials', newCreds);
     document.getElementById('adm_new_user').value = '';
     document.getElementById('adm_new_pass').value = '';
     document.getElementById('adm_confirm_pass').value = '';
@@ -1008,6 +1030,7 @@ function movePersonnel(mode, idx, dir) {
   if (newIdx < 0 || newIdx >= arr.length) return;
   [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
   localStorage.setItem(PERSONNEL_KEY, JSON.stringify(data));
+  saveToServer('personnel', data);
   renderPersonnelScreen();
 }
 
@@ -1032,6 +1055,7 @@ function addPersonnel(mode) {
     return a.name.localeCompare(b.name, 'es');
   });
   localStorage.setItem(PERSONNEL_KEY, JSON.stringify(data));
+  saveToServer('personnel', data);
   input.value = '';
   if (rankSel) rankSel.value = '';
   input.focus();
@@ -1043,6 +1067,7 @@ function removePersonnel(mode, idx) {
   if (!data[mode]) return;
   data[mode].splice(idx, 1);
   localStorage.setItem(PERSONNEL_KEY, JSON.stringify(data));
+  saveToServer('personnel', data);
   renderPersonnelScreen();
 }
 
@@ -1501,4 +1526,7 @@ function exportToPDF() {
 
 // ── Inicialización ────────────────────────────────────────────────────────────
 
-buildCalendar();
+(async () => {
+  await syncFromServer();
+  buildCalendar();
+})();
