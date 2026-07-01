@@ -10,7 +10,12 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
 app.use(express.json({ limit: '1mb' }));
 
-// Bloquea acceso directo a /data/ como fichero estático
+// data/personnel.json es legible como fichero estático (GET)
+app.get('/data/personnel.json', (req, res) => {
+  res.json(readJson(path.join(DATA_DIR, 'personnel.json'), { LRE: [], MCE: [] }));
+});
+
+// Bloquea acceso directo al resto de /data/
 app.use('/data', (req, res) => res.status(403).end());
 
 // Sirve HTML, JS, CSS y assets

@@ -57,14 +57,46 @@ function saveToServer(endpoint, data) {
   }).catch(() => {});
 }
 
+function savePersonnelNow() {
+  if (!window.location.hostname) {
+    alert('Abre la app desde el servidor (npm start) para guardar los cambios en el fichero.');
+    return;
+  }
+  const data = getPersonnel();
+  fetch('/api/personnel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(r => {
+    const msg = document.getElementById('personnel-save-msg');
+    if (!msg) return;
+    msg.textContent = r.ok ? 'Cambios guardados ✓' : 'Error al guardar';
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 3000);
+  }).catch(() => {
+    const msg = document.getElementById('personnel-save-msg');
+    if (msg) { msg.textContent = 'Error al guardar'; msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000); }
+  });
+}
+
 async function syncFromServer() {
+  try {
+    // Personal: leído como fichero estático (funciona en local y en Cloudflare Pages)
+    const p = await fetch('data/personnel.json?t=' + Date.now())
+      .then(r => r.ok ? r.json() : null).catch(() => null);
+    if (p) {
+      ['LRE','MCE'].forEach(m => {
+        if (p[m]) p[m] = p[m].map(e => typeof e === 'string' ? { name: e, rank: '' } : e);
+      });
+      localStorage.setItem(PERSONNEL_KEY, JSON.stringify(p));
+    }
+  } catch (e) {}
+
+  // Credenciales: solo vía API (no se exponen como fichero público)
   if (!window.location.hostname) return;
   try {
-    const [p, c] = await Promise.all([
-      fetch('/api/personnel').then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('/api/credentials').then(r => r.ok ? r.json() : null).catch(() => null)
-    ]);
-    if (p) localStorage.setItem(PERSONNEL_KEY, JSON.stringify(p));
+    const c = await fetch('/api/credentials')
+      .then(r => r.ok ? r.json() : null).catch(() => null);
     if (c) localStorage.setItem(CREDS_KEY, JSON.stringify(c));
   } catch (e) {}
 }
